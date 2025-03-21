@@ -8,14 +8,24 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 from together import Together
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from the correct .env file path
+load_dotenv('../cv-extraction-laravel/.env')
+
+# Get the CV_EXTRACTION_API_KEY and use it to set TOGETHER_API_KEY
+api_key = os.getenv('CV_EXTRACTION_API_KEY', '')
+os.environ['TOGETHER_API_KEY'] = api_key
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
 CORS(app)  # Enable CORS for all routes
 
 # Initialize Together AI client
-together_client = Together(api_key=os.getenv('TOGETHER_API_KEY', ''))
+together_client = Together()  # It will use TOGETHER_API_KEY from environment
+
+# Add a check to validate the API key was loaded
+if not api_key:
+    print("WARNING: CV_EXTRACTION_API_KEY not found in .env file. API calls will fail.")
+else:
+    print(f"API key loaded successfully from cv-extraction-laravel/.env")
 
 ALLOWED_EXTENSIONS = {'pdf'}
 

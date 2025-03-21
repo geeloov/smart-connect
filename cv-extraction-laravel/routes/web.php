@@ -8,6 +8,7 @@ use App\Http\Controllers\JobSeekerController;
 use App\Http\Controllers\RecruiterController;
 use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\JobPositionController;
+use App\Http\Controllers\ApplicationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -53,7 +54,8 @@ Route::middleware(['auth'])->group(function () {
         // Job applications
         Route::get('/applications', [JobApplicationController::class, 'index'])->name('applications.index');
         Route::get('/applications/{jobApplication}', [JobApplicationController::class, 'show'])->name('applications.show');
-        Route::get('/jobs/{jobPosition}/apply', [JobApplicationController::class, 'create'])->name('applications.create');
+        Route::get('/applications/{jobPosition}/create', [JobApplicationController::class, 'create'])
+            ->name('applications.create');
         Route::post('/jobs/{jobPosition}/apply', [JobApplicationController::class, 'store'])->name('applications.store');
         Route::post('/applications/{jobApplication}/update-status', [JobApplicationController::class, 'updateStatus'])->name('applications.update-status');
         Route::post('/applications/{jobApplication}/add-notes', [JobApplicationController::class, 'addNotes'])->name('applications.add-notes');
