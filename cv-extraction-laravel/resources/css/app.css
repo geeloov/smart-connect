@@ -1,0 +1,113 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source "../**/*.blade.php";
+@source "../**/*.js";
+@source "../**/*.vue";
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+:root {
+    /* Custom theme colors - optimized for better readability */
+    --green-primary: #B9FF66;
+    --green-secondary: #a7e85c;
+    --green-dark: #95d048;
+    --green-light: #d4ffab;
+    --dark-text: #191A23;
+    
+    /* Enhanced contrast colors for better readability */
+    --text-on-green: #191A23;
+    --hover-green: #95d048;
+    --focus-ring: rgba(185, 255, 102, 0.5);
+    --light-bg: #F9FAFC;
+}
+
+/* Override Tailwind indigo colors with green */
+.text-indigo-500, .text-indigo-600, .text-indigo-700 {
+    color: var(--green-primary) !important;
+}
+
+.bg-indigo-500, .bg-indigo-600, .bg-indigo-700 {
+    background-color: var(--green-primary) !important;
+}
+
+.hover\:bg-indigo-600:hover, .hover\:bg-indigo-700:hover {
+    background-color: var(--hover-green) !important;
+}
+
+.border-indigo-500, .border-indigo-600, .border-indigo-700 {
+    border-color: var(--green-primary) !important;
+}
+
+.hover\:border-indigo-500:hover, .hover\:border-indigo-600:hover {
+    border-color: var(--hover-green) !important;
+}
+
+.focus\:ring-indigo-500:focus, .focus\:border-indigo-500:focus {
+    --tw-ring-color: var(--focus-ring) !important;
+    border-color: var(--green-primary) !important;
+}
+
+/* Override blue colors with green variations */
+.text-blue-500, .text-blue-600, .text-blue-700, .text-blue-800 {
+    color: var(--dark-text) !important;
+}
+
+.bg-blue-100 {
+    background-color: var(--green-light) !important;
+}
+
+.bg-blue-500, .bg-blue-600, .bg-blue-700, .bg-blue-800 {
+    background-color: var(--green-primary) !important;
+}
+
+.border-blue-200, .border-blue-500 {
+    border-color: var(--green-secondary) !important;
+}
+
+/* Ensure buttons maintain proper text contrast */
+.bg-indigo-600 .text-white, .bg-indigo-700 .text-white,
+.bg-blue-600 .text-white, .bg-blue-700 .text-white {
+    color: var(--dark-text) !important;
+}
+
+/* Improve status badges for better readability */
+.bg-\[\#ffd700\] {
+    background-color: #FFD700 !important;
+    color: #191A23 !important;
+}
+
+.bg-\[\#00ff00\] {
+    background-color: #95d048 !important;
+    color: #191A23 !important;
+}
+
+.bg-\[\#007bff\] {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+.bg-\[\#ff0000\] {
+    background-color: #ff6b6b !important;
+    color: white !important;
+}
+
+/* Enhance form elements for better UX */
+input:focus, select:focus, textarea:focus {
+    border-color: var(--green-primary) !important;
+    box-shadow: 0 0 0 3px var(--focus-ring) !important;
+}
+
+/* Improve readability for all pages */
+body {
+    color: #333;
+    background-color: var(--light-bg);
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
