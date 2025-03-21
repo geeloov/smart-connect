@@ -5,6 +5,12 @@
     <div class="max-w-4xl mx-auto">
         <h1 class="text-2xl font-bold text-gray-800 mb-6">CV Analysis Tool</h1>
         
+        @if(session('matchingError'))
+            <div class="alert alert-warning">
+                <strong>Note:</strong> {{ session('matchingError') }}
+            </div>
+        @endif
+        
         <!-- Upload Form Card -->
         <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8 transition duration-300 hover:shadow-xl">
             <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
@@ -327,7 +333,7 @@
                 </div>
                 
                 <!-- Job Matching Results -->
-                @if(isset($jobMatching))
+                @if(isset($jobMatching) && is_array($jobMatching))
                 <div class="mt-8 rounded-xl bg-blue-50 p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -363,10 +369,27 @@
                                 </div>
                             </div>
                             @endif
+                            
+                            @if(isset($jobMatching['is_perfect_match']))
+                            <div class="flex items-center mt-2">
+                                <div class="w-1/3 text-sm font-medium text-gray-900">Perfect Match:</div>
+                                <div class="w-2/3">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $jobMatching['is_perfect_match'] ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                        {{ $jobMatching['is_perfect_match'] ? 'Yes' : 'No' }}
+                                    </span>
+                                </div>
+                            </div>
+                            @endif
+                            
+                            @if(isset($jobMatching['reasoning']))
+                            <div class="mt-4 p-3 bg-gray-50 rounded-md">
+                                <p class="text-sm text-gray-600 italic">{{ $jobMatching['reasoning'] }}</p>
+                            </div>
+                            @endif
                         </div>
                         
                         @if(isset($jobMatching['matching_skills']) && is_array($jobMatching['matching_skills']))
-                        <div class="p-4">
+                        <div class="p-4 border-b border-gray-100">
                             <div class="flex items-start">
                                 <div class="w-1/3 text-sm font-medium text-gray-900">Matching Skills:</div>
                                 <div class="w-2/3">
@@ -382,6 +405,33 @@
                                                 </span>
                                             @elseif(is_array($skill))
                                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    {{ implode(', ', array_filter($skill)) }}
+                                                </span>
+                                            @endif
+                                        @endforeach
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        
+                        @if(isset($jobMatching['missing_skills']) && is_array($jobMatching['missing_skills']) && count($jobMatching['missing_skills']) > 0)
+                        <div class="p-4">
+                            <div class="flex items-start">
+                                <div class="w-1/3 text-sm font-medium text-gray-900">Missing Skills:</div>
+                                <div class="w-2/3">
+                                    <div class="flex flex-wrap gap-2">
+                                        @foreach($jobMatching['missing_skills'] as $skill)
+                                            @if(is_string($skill))
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    {{ $skill }}
+                                                </span>
+                                            @elseif(is_array($skill) && isset($skill['name']))
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    {{ $skill['name'] }}
+                                                </span>
+                                            @elseif(is_array($skill))
+                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                                     {{ implode(', ', array_filter($skill)) }}
                                                 </span>
                                             @endif
