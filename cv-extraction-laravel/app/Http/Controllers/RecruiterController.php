@@ -103,7 +103,18 @@ class RecruiterController extends Controller
         $jobMatching = request()->session()->get('jobMatching');
         $jobDescription = request()->session()->get('jobDescription');
         
-        return view('recruiter.cv-extraction', compact('cvData', 'jobMatching', 'jobDescription'));
+        // Get the recruiter's job positions for the dropdown
+        $jobPositions = Auth::user()->jobPositions()
+                        ->where('is_active', true)
+                        ->latest()
+                        ->get();
+        
+        return view('recruiter.cv-extraction', compact(
+            'cvData', 
+            'jobMatching', 
+            'jobDescription',
+            'jobPositions'
+        ));
     }
 
     /**

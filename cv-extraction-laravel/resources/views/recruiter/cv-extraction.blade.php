@@ -96,6 +96,22 @@
                     </div>
                     
                     <div>
+                        <label for="job_position" class="block text-sm font-medium text-gray-700 mb-1">Select from your job postings</label>
+                        <select id="job_position" 
+                            class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                            <option value="">-- Select a job position --</option>
+                            @foreach($jobPositions ?? [] as $job)
+                                <option value="{{ $job->id }}" data-description="{{ $job->description }}">
+                                    {{ $job->title }} - {{ Str::limit($job->description, 60) }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-2 text-xs text-gray-500 italic">
+                            Select one of your job postings to automatically fill the job description field
+                        </p>
+                    </div>
+                    
+                    <div class="mt-4">
                         <label for="job_description" class="block text-sm font-medium text-gray-700 mb-1">Job Description (Optional)</label>
                         <textarea name="job_description" id="job_description" 
                             class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
@@ -536,6 +552,30 @@
                         saveCandidate.disabled = false;
                     }, 3000);
                 });
+            });
+        }
+
+        // Add job position selection functionality
+        const jobPositionSelect = document.getElementById('job_position');
+        const jobDescriptionTextarea = document.getElementById('job_description');
+        
+        if (jobPositionSelect && jobDescriptionTextarea) {
+            jobPositionSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                
+                if (selectedOption.value) {
+                    // Get the job description from the data attribute
+                    const jobDescription = selectedOption.getAttribute('data-description');
+                    
+                    // Update the job description textarea
+                    jobDescriptionTextarea.value = jobDescription;
+                    
+                    // Add a subtle highlight animation to show the field has been updated
+                    jobDescriptionTextarea.classList.add('bg-blue-50');
+                    setTimeout(() => {
+                        jobDescriptionTextarea.classList.remove('bg-blue-50');
+                    }, 1000);
+                }
             });
         }
     });
