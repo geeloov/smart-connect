@@ -127,167 +127,187 @@
             </div>
             
             <div class="p-6 lg:p-8">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full">
-                        <tbody class="divide-y divide-gray-200">
-                            <!-- Personal Information -->
-                            @if(isset($cvData['name']))
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3 bg-gray-50 rounded-l-lg">Name:</th>
-                                <td class="py-4 px-4 text-sm text-gray-700 bg-gray-50 rounded-r-lg">{{ $cvData['name'] }}</td>
-                            </tr>
-                            @endif
-                            
-                            @if(isset($cvData['email']))
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3">Email:</th>
-                                <td class="py-4 px-4 text-sm text-gray-700">{{ $cvData['email'] }}</td>
-                            </tr>
-                            @endif
-                            
-                            @if(isset($cvData['phone']))
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3 bg-gray-50 rounded-l-lg">Phone:</th>
-                                <td class="py-4 px-4 text-sm text-gray-700 bg-gray-50 rounded-r-lg">{{ $cvData['phone'] }}</td>
-                            </tr>
-                            @endif
-                            
-                            @if(isset($cvData['address']) || isset($cvData['location']))
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3">Location:</th>
-                                <td class="py-4 px-4 text-sm text-gray-700">{{ $cvData['address'] ?? $cvData['location'] ?? 'Not specified' }}</td>
-                            </tr>
-                            @endif
-                            
-                            <!-- Skills (array) -->
-                            @if(isset($cvData['skills']) && is_array($cvData['skills']))
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3 align-top bg-gray-50 rounded-l-lg">Skills:</th>
-                                <td class="py-4 px-4 text-sm text-gray-700 bg-gray-50 rounded-r-lg">
-                                    <div class="flex flex-wrap gap-2">
-                                        @foreach($cvData['skills'] as $skill)
-                                            @if(is_string($skill))
-                                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                    {{ $skill }}
-                                                </span>
-                                            @elseif(is_array($skill))
-                                                @if(isset($skill['name']))
+                <!-- Tabs -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="flex -mb-px space-x-8" aria-label="Tabs">
+                        <button id="tab-formatted" class="tab-btn py-2 border-b-2 font-medium text-indigo-600 border-indigo-500">
+                            Formatted View
+                        </button>
+                        <button id="tab-raw" class="tab-btn py-2 border-b-2 font-medium text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300 transition-colors">
+                            Raw JSON
+                        </button>
+                    </nav>
+                </div>
+                
+                <!-- Formatted View -->
+                <div id="formatted-view" class="space-y-4">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full">
+                            <tbody class="divide-y divide-gray-200">
+                                <!-- Personal Information -->
+                                @if(isset($cvData['name']))
+                                <tr>
+                                    <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3 bg-gray-50 rounded-l-lg">Name:</th>
+                                    <td class="py-4 px-4 text-sm text-gray-700 bg-gray-50 rounded-r-lg">{{ $cvData['name'] }}</td>
+                                </tr>
+                                @endif
+                                
+                                @if(isset($cvData['email']))
+                                <tr>
+                                    <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3">Email:</th>
+                                    <td class="py-4 px-4 text-sm text-gray-700">{{ $cvData['email'] }}</td>
+                                </tr>
+                                @endif
+                                
+                                @if(isset($cvData['phone']))
+                                <tr>
+                                    <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3 bg-gray-50 rounded-l-lg">Phone:</th>
+                                    <td class="py-4 px-4 text-sm text-gray-700 bg-gray-50 rounded-r-lg">{{ $cvData['phone'] }}</td>
+                                </tr>
+                                @endif
+                                
+                                @if(isset($cvData['address']) || isset($cvData['location']))
+                                <tr>
+                                    <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3">Location:</th>
+                                    <td class="py-4 px-4 text-sm text-gray-700">{{ $cvData['address'] ?? $cvData['location'] ?? 'Not specified' }}</td>
+                                </tr>
+                                @endif
+                                
+                                <!-- Skills (array) -->
+                                @if(isset($cvData['skills']) && is_array($cvData['skills']))
+                                <tr>
+                                    <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3 align-top bg-gray-50 rounded-l-lg">Skills:</th>
+                                    <td class="py-4 px-4 text-sm text-gray-700 bg-gray-50 rounded-r-lg">
+                                        <div class="flex flex-wrap gap-2">
+                                            @foreach($cvData['skills'] as $skill)
+                                                @if(is_string($skill))
                                                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                        {{ $skill['name'] }}
-                                                        @if(isset($skill['level']))
-                                                            <span class="ml-1 text-blue-600">({{ $skill['level'] }})</span>
-                                                        @endif
+                                                        {{ $skill }}
                                                     </span>
-                                                @else
-                                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                        {{ implode(', ', array_filter($skill)) }}
-                                                    </span>
+                                                @elseif(is_array($skill))
+                                                    @if(isset($skill['name']))
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            {{ $skill['name'] }}
+                                                            @if(isset($skill['level']))
+                                                                <span class="ml-1 text-blue-600">({{ $skill['level'] }})</span>
+                                                            @endif
+                                                        </span>
+                                                    @else
+                                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            {{ implode(', ', array_filter($skill)) }}
+                                                        </span>
+                                                    @endif
                                                 @endif
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </td>
-                            </tr>
-                            @endif
-                            
-                            <!-- Education (array) -->
-                            @if(isset($cvData['education']) && is_array($cvData['education']))
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3 align-top">Education:</th>
-                                <td class="py-4 px-4 text-sm text-gray-700">
-                                    <div class="space-y-4">
-                                        @foreach($cvData['education'] as $edu)
-                                            @if(is_string($edu))
-                                                <div class="pb-2 border-b border-gray-100">{{ $edu }}</div>
-                                            @elseif(is_array($edu))
-                                                <div class="pb-2 border-b border-gray-100">
-                                                    @if(isset($edu['institution']))
-                                                        <div class="font-medium text-gray-900">{{ $edu['institution'] }}</div>
-                                                    @endif
-                                                    
-                                                    <div>
-                                                        @if(isset($edu['degree']))
-                                                            {{ $edu['degree'] }}
+                                            @endforeach
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endif
+                                
+                                <!-- Education (array) -->
+                                @if(isset($cvData['education']) && is_array($cvData['education']))
+                                <tr>
+                                    <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3 align-top">Education:</th>
+                                    <td class="py-4 px-4 text-sm text-gray-700">
+                                        <div class="space-y-4">
+                                            @foreach($cvData['education'] as $edu)
+                                                @if(is_string($edu))
+                                                    <div class="pb-2 border-b border-gray-100">{{ $edu }}</div>
+                                                @elseif(is_array($edu))
+                                                    <div class="pb-2 border-b border-gray-100">
+                                                        @if(isset($edu['institution']))
+                                                            <div class="font-medium text-gray-900">{{ $edu['institution'] }}</div>
                                                         @endif
                                                         
-                                                        @if(isset($edu['field']))
-                                                            - {{ $edu['field'] }}
-                                                        @endif
-                                                    </div>
-                                                    
-                                                    @if(isset($edu['year']) || isset($edu['graduation_year']))
-                                                        <div class="text-gray-500 text-xs mt-1">
-                                                            {{ $edu['year'] ?? $edu['graduation_year'] ?? '' }}
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </td>
-                            </tr>
-                            @endif
-                            
-                            <!-- Work Experience (array) -->
-                            @if(isset($cvData['work_experience']) && is_array($cvData['work_experience']))
-                            <tr>
-                                <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3 align-top bg-gray-50 rounded-l-lg">Work Experience:</th>
-                                <td class="py-4 px-4 text-sm text-gray-700 bg-gray-50 rounded-r-lg">
-                                    <div class="space-y-6">
-                                        @foreach($cvData['work_experience'] as $exp)
-                                            @if(is_string($exp))
-                                                <div class="pb-4 border-b border-gray-200">{{ $exp }}</div>
-                                            @elseif(is_array($exp))
-                                                <div class="pb-4 border-b border-gray-200">
-                                                    <div class="font-medium text-gray-900">
-                                                        @if(isset($exp['company']))
-                                                            {{ $exp['company'] }}
-                                                        @elseif(isset($exp['employer']))
-                                                            {{ $exp['employer'] }}
-                                                        @elseif(isset($exp['organization']))
-                                                            {{ $exp['organization'] }}
-                                                        @endif
-                                                        
-                                                        @if(isset($exp['position']) || isset($exp['title']) || isset($exp['role']))
-                                                            - {{ $exp['position'] ?? $exp['title'] ?? $exp['role'] }}
-                                                        @endif
-                                                    </div>
-                                                    
-                                                    @if(isset($exp['duration']) || isset($exp['start_date']) || isset($exp['end_date']))
-                                                        <div class="text-gray-500 text-xs mt-1">
-                                                            @if(isset($exp['duration']))
-                                                                {{ $exp['duration'] }}
-                                                            @elseif(isset($exp['start_date']) || isset($exp['end_date']))
-                                                                {{ $exp['start_date'] ?? 'N/A' }} - {{ $exp['end_date'] ?? 'Present' }}
+                                                        <div>
+                                                            @if(isset($edu['degree']))
+                                                                {{ $edu['degree'] }}
+                                                            @endif
+                                                            
+                                                            @if(isset($edu['field']))
+                                                                - {{ $edu['field'] }}
                                                             @endif
                                                         </div>
-                                                    @endif
-                                                    
-                                                    @if(isset($exp['description']) || isset($exp['responsibilities']))
-                                                        <p class="mt-2 text-gray-700">
-                                                            {{ $exp['description'] ?? $exp['responsibilities'] }}
-                                                        </p>
-                                                    @endif
-                                                    
-                                                    @if(isset($exp['achievements']) && is_array($exp['achievements']))
-                                                        <div class="mt-2 pl-4 border-l-2 border-green-300">
-                                                            <div class="text-xs font-medium text-gray-900 mb-1">Achievements:</div>
-                                                            <ul class="list-disc pl-5 text-sm text-gray-700">
-                                                                @foreach($exp['achievements'] as $achievement)
-                                                                    <li>{{ $achievement }}</li>
-                                                                @endforeach
-                                                            </ul>
+                                                        
+                                                        @if(isset($edu['year']) || isset($edu['graduation_year']))
+                                                            <div class="text-gray-500 text-xs mt-1">
+                                                                {{ $edu['year'] ?? $edu['graduation_year'] ?? '' }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endif
+                                
+                                <!-- Work Experience (array) -->
+                                @if(isset($cvData['work_experience']) && is_array($cvData['work_experience']))
+                                <tr>
+                                    <th class="py-4 px-4 text-left text-sm font-medium text-gray-900 w-1/3 align-top bg-gray-50 rounded-l-lg">Work Experience:</th>
+                                    <td class="py-4 px-4 text-sm text-gray-700 bg-gray-50 rounded-r-lg">
+                                        <div class="space-y-6">
+                                            @foreach($cvData['work_experience'] as $exp)
+                                                @if(is_string($exp))
+                                                    <div class="pb-4 border-b border-gray-200">{{ $exp }}</div>
+                                                @elseif(is_array($exp))
+                                                    <div class="pb-4 border-b border-gray-200">
+                                                        <div class="font-medium text-gray-900">
+                                                            @if(isset($exp['company']))
+                                                                {{ $exp['company'] }}
+                                                            @elseif(isset($exp['employer']))
+                                                                {{ $exp['employer'] }}
+                                                            @elseif(isset($exp['organization']))
+                                                                {{ $exp['organization'] }}
+                                                            @endif
+                                                            
+                                                            @if(isset($exp['position']) || isset($exp['title']) || isset($exp['role']))
+                                                                - {{ $exp['position'] ?? $exp['title'] ?? $exp['role'] }}
+                                                            @endif
                                                         </div>
-                                                    @endif
-                                                </div>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                </td>
-                            </tr>
-                            @endif
-                        </tbody>
-                    </table>
+                                                        
+                                                        @if(isset($exp['duration']) || isset($exp['start_date']) || isset($exp['end_date']))
+                                                            <div class="text-gray-500 text-xs mt-1">
+                                                                @if(isset($exp['duration']))
+                                                                    {{ $exp['duration'] }}
+                                                                @elseif(isset($exp['start_date']) || isset($exp['end_date']))
+                                                                    {{ $exp['start_date'] ?? 'N/A' }} - {{ $exp['end_date'] ?? 'Present' }}
+                                                                @endif
+                                                            </div>
+                                                        @endif
+                                                        
+                                                        @if(isset($exp['description']) || isset($exp['responsibilities']))
+                                                            <p class="mt-2 text-gray-700">
+                                                                {{ $exp['description'] ?? $exp['responsibilities'] }}
+                                                            </p>
+                                                        @endif
+                                                        
+                                                        @if(isset($exp['achievements']) && is_array($exp['achievements']))
+                                                            <div class="mt-2 pl-4 border-l-2 border-green-300">
+                                                                <div class="text-xs font-medium text-gray-900 mb-1">Achievements:</div>
+                                                                <ul class="list-disc pl-5 text-sm text-gray-700">
+                                                                    @foreach($exp['achievements'] as $achievement)
+                                                                        <li>{{ $achievement }}</li>
+                                                                    @endforeach
+                                                                </ul>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Raw JSON View -->
+                <div id="raw-json" class="mt-6 hidden">
+                    <pre id="json-display" class="bg-gray-50 p-4 rounded-lg overflow-x-auto text-xs h-96 text-gray-800">{{ json_encode($cvData, JSON_PRETTY_PRINT) }}</pre>
                 </div>
                 
                 <!-- Job Matching Results -->
@@ -373,7 +393,7 @@
     </div>
 </div>
 
-<!-- Add JavaScript for handling file upload state -->
+<!-- Add JavaScript for handling file upload state and tab switching -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const fileInput = document.getElementById('cv_file');
@@ -383,6 +403,32 @@
         const selectedFilesize = document.getElementById('selected-filesize');
         const changeFileBtn = document.getElementById('change-file-btn');
         
+        // Tab switching functionality
+        const tabFormatted = document.getElementById('tab-formatted');
+        const tabRaw = document.getElementById('tab-raw');
+        const formattedView = document.getElementById('formatted-view');
+        const rawJson = document.getElementById('raw-json');
+        
+        if (tabFormatted && tabRaw) {
+            tabFormatted.addEventListener('click', function() {
+                formattedView.classList.remove('hidden');
+                rawJson.classList.add('hidden');
+                tabFormatted.classList.add('text-indigo-600', 'border-indigo-500');
+                tabFormatted.classList.remove('text-gray-500', 'border-transparent');
+                tabRaw.classList.add('text-gray-500', 'border-transparent');
+                tabRaw.classList.remove('text-indigo-600', 'border-indigo-500');
+            });
+            
+            tabRaw.addEventListener('click', function() {
+                formattedView.classList.add('hidden');
+                rawJson.classList.remove('hidden');
+                tabRaw.classList.add('text-indigo-600', 'border-indigo-500');
+                tabRaw.classList.remove('text-gray-500', 'border-transparent');
+                tabFormatted.classList.add('text-gray-500', 'border-transparent');
+                tabFormatted.classList.remove('text-indigo-600', 'border-indigo-500');
+            });
+        }
+        
         // Function to format bytes to KB, MB
         function formatFileSize(bytes) {
             if (bytes < 1024) return bytes + ' bytes';
@@ -391,35 +437,39 @@
         }
         
         // Handle file selection
-        fileInput.addEventListener('change', function(e) {
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                // Update the selected file info
-                selectedFilename.textContent = file.name;
-                selectedFilesize.textContent = 'Size: ' + formatFileSize(file.size);
-                
-                // Show the selected state
-                initialUploadDiv.classList.add('hidden');
-                selectedUploadDiv.classList.remove('hidden');
-            } else {
-                // Show the initial state if no file selected
-                initialUploadDiv.classList.remove('hidden');
-                selectedUploadDiv.classList.add('hidden');
-            }
-        });
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    // Update the selected file info
+                    selectedFilename.textContent = file.name;
+                    selectedFilesize.textContent = 'Size: ' + formatFileSize(file.size);
+                    
+                    // Show the selected state
+                    initialUploadDiv.classList.add('hidden');
+                    selectedUploadDiv.classList.remove('hidden');
+                } else {
+                    // Show the initial state if no file selected
+                    initialUploadDiv.classList.remove('hidden');
+                    selectedUploadDiv.classList.add('hidden');
+                }
+            });
+        }
         
         // Handle "Change file" button click
-        changeFileBtn.addEventListener('click', function() {
-            // Reset the file input
-            fileInput.value = '';
-            // Show the initial state
-            initialUploadDiv.classList.remove('hidden');
-            selectedUploadDiv.classList.add('hidden');
-            // Trigger file input click
-            setTimeout(() => {
-                fileInput.click();
-            }, 100);
-        });
+        if (changeFileBtn) {
+            changeFileBtn.addEventListener('click', function() {
+                // Reset the file input
+                fileInput.value = '';
+                // Show the initial state
+                initialUploadDiv.classList.remove('hidden');
+                selectedUploadDiv.classList.add('hidden');
+                // Trigger file input click
+                setTimeout(() => {
+                    fileInput.click();
+                }, 100);
+            });
+        }
     });
 </script>
 @endsection

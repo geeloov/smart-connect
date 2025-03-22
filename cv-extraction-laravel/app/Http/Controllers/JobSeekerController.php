@@ -109,6 +109,7 @@ class JobSeekerController extends Controller
         // Validate the request
         $request->validate([
             'cv_file' => 'required|mimes:pdf|max:10240', // 10MB max
+            'job_description' => 'nullable|string|max:50000', // Add validation for job description
         ]);
         
         try {
@@ -124,23 +125,29 @@ class JobSeekerController extends Controller
             $extractionController = app()->make('App\Http\Controllers\CvExtractionController');
             
             // Get the extraction results - the file is only temporarily used
-            $response = $extractionController->extract($request);
+            $extractionResult = $extractionController->extract($request);
             
-            // If the extraction returned a view, we need to extract the data and redirect back
-            if ($response instanceof \Illuminate\View\View) {
-                $viewData = $response->getData();
-                
-                // Flash the data to the session
-                return redirect()->route('job-seeker.cv-upload')
-                    ->with('cvData', $viewData['cvData'] ?? null)
-                    ->with('jobMatching', $viewData['jobMatching'] ?? null)
-                    ->with('jobDescription', $viewData['jobDescription'] ?? null)
-                    ->with('success', 'CV processed successfully!');
+            // Process job matching if job description is provided
+            $jobDescription = $request->job_description ?? '';
+            $matchingResults = null;
+            
+            if (!empty($jobDescription) && isset($extractionResult['cv_data'])) {
+                try {
+                    // Match CV with job description
+                    $matchingResults = $extractionController->matchWithJob($file, $jobDescription);
+                } catch (\Exception $e) {
+                    Log::warning('Job matching failed but continuing with CV data', [
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
             
-            // If we get here, something went wrong
+            // Flash the data to the session
             return redirect()->route('job-seeker.cv-upload')
-                ->with('error', 'Failed to process CV. Please try again.');
+                ->with('cvData', $extractionResult['cv_data'] ?? null)
+                ->with('jobMatching', $matchingResults)
+                ->with('jobDescription', $jobDescription)
+                ->with('success', 'CV processed successfully!');
             
         } catch (\Exception $e) {
             Log::error('Error processing CV upload: ' . $e->getMessage(), [
