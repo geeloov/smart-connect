@@ -130,7 +130,7 @@ class JobApplicationController extends Controller
                 'original_name' => $file->getClientOriginalName()
             ]);
             
-            // Create the job application - WITHOUT skill matching or compatibility analysis
+            // Create the job application record
             $jobApplication = new JobApplication();
             $jobApplication->user_id = Auth::id();
             $jobApplication->job_position_id = $jobPosition->id;
@@ -139,7 +139,14 @@ class JobApplicationController extends Controller
             $jobApplication->status = 'pending';
             $jobApplication->recruiter_viewed_at = null;
             
-            // Try to extract CV data for basic information (but skip skills matching)
+            // Get extraction controller to access its methods
+            $extractionController = app()->make('App\Http\Controllers\CVExtractionController');
+            
+            // Initialize variables
+            $cvData = null;
+            $matchingData = null;
+            
+            // Step 1: Try to extract CV data
             try {
                 $response = Http::withHeaders([
                     'Accept' => 'application/json',
@@ -156,20 +163,66 @@ class JobApplicationController extends Controller
                     if ($cvData) {
                         $jobApplication->cv_data = is_string($cvData) ? $cvData : json_encode($cvData);
                     }
+                    
+                    Log::info('CV data extracted successfully for job application', [
+                        'user_id' => Auth::id(),
+                        'job_id' => $jobPosition->id,
+                        'data_keys' => $cvData ? array_keys($cvData) : 'no data'
+                    ]);
+                } else {
+                    Log::warning('CV extraction API returned non-successful response', [
+                        'status' => $response->status(),
+                        'body' => $response->body()
+                    ]);
                 }
             } catch (\Exception $e) {
                 Log::error('Error calling CV extraction API: ' . $e->getMessage());
                 // Continue without CV data
             }
             
-            // Save the application
+            // Step 2: Try to match CV with job position
+            if ($cvData) {
+                try {
+                    Log::info('Attempting job matching for application', [
+                        'job_id' => $jobPosition->id,
+                        'job_title' => $jobPosition->title,
+                        'job_description_length' => strlen($jobPosition->description)
+                    ]);
+                    
+                    // Call the matchWithJob method from the extraction controller
+                    $matchingData = $extractionController->matchWithJob($file, $jobPosition->description);
+                    
+                    if ($matchingData) {
+                        // Store matching data in the application record
+                        $jobApplication->compatibility_analysis = json_encode($matchingData);
+                        
+                        // Log the matching results
+                        Log::info('Job matching completed for application', [
+                            'match_score' => $matchingData['match_score'] ?? 'not available',
+                            'matched_skills_count' => isset($matchingData['skills_analysis']['matched_skills']) ? 
+                                count($matchingData['skills_analysis']['matched_skills']) : 0,
+                            'missing_skills_count' => isset($matchingData['skills_analysis']['missing_skills']) ? 
+                                count($matchingData['skills_analysis']['missing_skills']) : 0
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error in job matching process: ' . $e->getMessage(), [
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                    // Continue without matching data
+                }
+            }
+            
+            // Save the application with all collected data
             $jobApplication->save();
             
             // Log success
             Log::info('Job application created successfully', [
                 'application_id' => $jobApplication->id,
                 'user_id' => Auth::id(),
-                'job_id' => $jobPosition->id
+                'job_id' => $jobPosition->id,
+                'has_cv_data' => !empty($jobApplication->cv_data),
+                'has_matching_data' => !empty($jobApplication->compatibility_analysis)
             ]);
             
             // Dispatch event for new application submission
