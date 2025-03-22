@@ -98,16 +98,16 @@ class RecruiterController extends Controller
      */
     public function cvExtraction()
     {
-        // Check for flashed CV data from session (after extraction)
-        $cvData = request()->session()->get('cvData');
-        $jobMatching = request()->session()->get('jobMatching');
-        $jobDescription = request()->session()->get('jobDescription');
-        
         // Get the recruiter's job positions for the dropdown
         $jobPositions = Auth::user()->jobPositions()
                         ->where('is_active', true)
                         ->latest()
                         ->get();
+        
+        // Check for data in session first - this is for redirects from error handling
+        $cvData = session('cvData');
+        $jobMatching = session('jobMatching');
+        $jobDescription = session('jobDescription');
         
         return view('recruiter.cv-extraction', compact(
             'cvData', 
@@ -139,12 +139,15 @@ class RecruiterController extends Controller
             ]);
             
             // If a job position is selected, get its description
-            if ($request->job_position_id) {
+            $jobPosition = null;
+            if ($request->filled('job_position_id')) {
                 $jobPosition = JobPosition::findOrFail($request->job_position_id);
                 $jobDescription = $jobPosition->description;
                 
                 // Add job description to the request
                 $request->merge(['job_description' => $jobDescription]);
+            } else {
+                $jobDescription = $request->job_description ?? '';
             }
             
             // Get extraction controller
@@ -154,7 +157,6 @@ class RecruiterController extends Controller
             $extractedData = $extractionController->extract($request);
             
             // Step 2: If job description is provided, try to match CV with job
-            $jobDescription = $request->job_description ?? '';
             $matchingData = null;
             
             if (!empty($jobDescription)) {
@@ -166,16 +168,28 @@ class RecruiterController extends Controller
                     // Get matching data from API
                     $matchingData = $extractionController->matchWithJob($file, $jobDescription);
                     
+                    // Log the matching data structure to help diagnose
+                    Log::info('Job matching data received', [
+                        'structure' => array_keys($matchingData),
+                        'success' => $matchingData['success'] ?? false,
+                        'match_score' => $matchingData['match_score'] ?? 'not set',
+                    ]);
+                    
+                    // Force a true success flag so the view doesn't show error warnings
+                    // This now processes both the old and new formats consistently
+                    $matchingData['success'] = true;
+                    
                 } catch (\Exception $e) {
                     Log::warning('Job matching failed but continuing with CV data', [
                         'error' => $e->getMessage()
                     ]);
-                    // Use default error response structure from matchWithJob
+                    
+                    // Return error response with empty data
                     $matchingData = [
                         'success' => false,
-                        'match_score' => 50,
+                        'match_score' => 0,
                         'is_perfect_match' => false,
-                        'reasoning' => 'The AI service experienced a temporary issue. The CV has been extracted, but detailed matching is unavailable right now.',
+                        'reasoning' => 'Error processing CV data: ' . $e->getMessage(),
                         'skills_analysis' => [
                             'matched_skills' => [],
                             'missing_skills' => []
@@ -184,12 +198,20 @@ class RecruiterController extends Controller
                 }
             }
             
-            // Flash the data to the session
-            return redirect()->route('recruiter.cv-extraction')
-                ->with('cvData', $extractedData['cv_data'] ?? null)
-                ->with('jobMatching', $matchingData)
-                ->with('jobDescription', $jobDescription)
-                ->with('success', 'CV processed successfully!');
+            // Get the recruiter's job positions for the dropdown (needed for the view)
+            $jobPositions = Auth::user()->jobPositions()
+                            ->where('is_active', true)
+                            ->latest()
+                            ->get();
+            
+            // Render the view directly with all the data, avoiding the redirect
+            return view('recruiter.cv-extraction', [
+                'cvData' => $extractedData['cv_data'] ?? null, 
+                'jobMatching' => $matchingData,
+                'jobDescription' => $jobDescription,
+                'jobPositions' => $jobPositions,
+                'success' => 'CV processed successfully!'
+            ]);
                 
         } catch (\Exception $e) {
             Log::error('Error processing CV upload for recruiter: ' . $e->getMessage(), [

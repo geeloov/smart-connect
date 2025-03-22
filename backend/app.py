@@ -49,7 +49,7 @@ def process_cv_with_together_ai(cv_text, job_description=None):
     # Create prompt content
     if job_description:
         prompt = f"""
-You are an expert HR AI with 20+ years of experience in resume analysis and job matching. Your task is to extract CV data and perform a comprehensive job matching analysis.
+You are an expert HR AI specialized in CV analysis and job matching. Your task is to analyze a CV against a job description and provide structured matching results in JSON format.
 
 CV TEXT:
 {cv_text}
@@ -57,117 +57,56 @@ CV TEXT:
 JOB DESCRIPTION:
 {job_description}
 
-First, extract all information from the CV into a structured format. Then, analyze how well the candidate's profile matches the job requirements by examining skills, experience, education, and other qualifications.
+OBJECTIVE:
+Evaluate how well the candidate's CV matches the job requirements and provide a detailed analysis in a standardized format.
 
-For the skills analysis, follow these PRECISE guidelines:
+ANALYSIS INSTRUCTIONS:
+1. Extract key skills from both the CV and job description
+2. Compare the candidate's experience level with job requirements
+3. Evaluate educational qualifications against job requirements
+4. Provide an overall match score and detailed reasoning
+5. Only use factual information found in the CV - do not invent or assume information
 
-SKILLS EXTRACTION RULES:
-1. Extract ONLY specific technical skills, tools, frameworks, and clearly defined professional competencies
-2. A valid skill must be a specific ability, technology, tool, or methodology that can be learned and directly applied in a professional setting
-3. Ignore all job posting metadata like "Junior/Mid-Level", "Full-time", "Why Join Us", "Benefits", etc.
-4. Ignore section headers, time-related phrases, benefit descriptions, or company culture statements
-5. Ignore general phrases and qualities like "attention to detail", "teamwork", "collaborative"
-6. Phrases like "web accessibility standards" should be refined to specific standards like "WCAG", "Section 508", etc.
+SKILL MATCHING CRITERIA:
+- Technical skills: Programming languages, frameworks, software, tools, platforms
+- Professional skills: Methodologies, certifications, domain expertise
+- Only include concrete, specific skills (not soft skills or general qualities)
 
-CLEAR EXAMPLES OF VALID SKILLS:
-- Technical: JavaScript, Python, React, Vue.js, AWS, Docker, PostgreSQL, Kubernetes, Git, CI/CD, REST API, GraphQL
-- Professional: Agile, Scrum, Kanban, UX Research, A/B Testing, SEO, SEM, Financial Modeling, Risk Assessment, Strategic Planning
-- Industry-specific: HIPAA Compliance, GDPR, ISO 27001, Six Sigma, PMP, CFA, LEED Certification
-
-EXAMPLES OF WHAT ARE NOT SKILLS:
-- Seniority levels: Junior, Mid-level, Senior, Lead, Manager
-- Employment types: Full-time, Part-time, Contract, Remote
-- Section headers: "Why Join Us", "Requirements", "Responsibilities", "About the Role"
-- Time phrases: "3+ years", "immediately", "occasional overtime"
-- Qualities: detail-oriented, hard-working, team player, motivated, responsible
-- General phrases: "ability to work under pressure", "excellent communication skills"
-
-VALIDATION STEP: After identifying skills, review each extracted skill and verify it meets these criteria:
-1. Is it a specific technology, tool, methodology, or professional competency?
-2. Can it be learned through training or education?
-3. Is it something that would appear on a professional certification or training course?
-4. Would it make sense in a "Skills" section of a professional resume?
-
-If any candidate skill fails this validation, DO NOT include it in the skills list.
-
-For the experience analysis:
-- Evaluate if the candidate has the required years of experience
-- Determine if the candidate's work history is relevant to the position
-- Calculate total years of relevant experience
-- Identify any experience gaps that would be concerning
-
-For the education analysis:
-- Check if the candidate meets the education requirements (degree level, field of study)
-- Evaluate the relevance of the candidate's educational background
-
-Return a detailed JSON containing:
-
+FORMAT YOUR RESPONSE AS A JSON WITH THE FOLLOWING STRUCTURE:
+```json
 {{
-  "cv_data": {{
-    "name": "...",
-    "email": "...",
-    "phone": "...",
-    "address": "...",
-    "linkedin": "...",
-    "github": "...",
-    "website": "...",
-    "summary": "...",
-    "education": [
-      {{
-        "degree": "...",
-        "institution": "...",
-        "field_of_study": "...",
-        "start_date": "...",
-        "end_date": "..."
-      }}
-    ],
-    "work_experience": [
-      {{
-        "position": "...",
-        "company": "...",
-        "start_date": "...",
-        "end_date": "...",
-        "duration": "...",
-        "description": "...",
-        "achievements": ["...", "..."]
-      }}
-    ],
-    "skills": ["...", "..."],  // ONLY include actual professional and technical skills here
-    "certifications": ["...", "..."],
-    "languages": ["...", "..."],
-    "projects": [
-      {{
-        "name": "...",
-        "description": "...",
-        "technologies": ["...", "..."]
-      }}
-    ]
-  }},
   "job_matching": {{
-    "match_score": 85,  // Overall match score from 0-100
-    "is_perfect_match": false,  // Whether the candidate is a perfect match
-    "reasoning": "...",  // Overall assessment of the match
-    "missing_criteria": ["...", "..."],  // List of missing requirements
+    "match_score": 75,  // Overall match score from 0-100 based on objective criteria
+    "is_perfect_match": false,  // Boolean indicating if all requirements are met
+    "reasoning": "Clear explanation of the overall match including strengths and weaknesses",
     "skills_analysis": {{
-      "matched_skills": ["...", "..."],  // ONLY genuine skills the candidate has that match job requirements
-      "missing_skills": ["...", "..."],  // ONLY genuine required skills the candidate doesn't have
-      "skills_match_score": 80  // Percentage of required skills the candidate has
+      "matched_skills": ["Skill1", "Skill2"],  // Skills found in both CV and job description
+      "missing_skills": ["Skill3", "Skill4"],  // Skills required by job but missing in CV
+      "skills_match_score": 70  // Percentage of required skills the candidate has
     }},
     "experience_analysis": {{
-      "has_required_experience": true,  // Whether candidate meets the required years
-      "years_of_relevant_experience": 5.5,  // Total years of relevant experience
-      "experience_match_score": 90,  // Score for experience match
-      "experience_gaps": ["..."]  // Any concerning gaps in experience
+      "has_required_experience": true,  // Whether candidate meets minimum experience
+      "years_of_relevant_experience": 4,  // Numeric value of relevant experience
+      "experience_match_score": 80  // Score for experience match
     }},
     "education_analysis": {{
-      "meets_education_requirements": true,  // Whether candidate meets education requirements
-      "education_match_score": 100,  // Score for education match
-      "relevant_degrees": ["..."]  // Degrees that are relevant to the position
+      "meets_education_requirements": true,  // Whether education requirements are met
+      "education_match_score": 90,  // Score for education match
+      "relevant_degrees": ["Degree1"]  // Relevant degrees found in CV
     }}
   }}
 }}
+```
 
-Be accurate, thorough, and objective in your analysis. Where exact information is not available, make reasonable inferences but indicate uncertainty. Score each category as fairly as possible based on the information provided.
+IMPORTANT GUIDELINES:
+1. Be objective and factual based only on the CV content
+2. Do not invent skills or experience not mentioned in the CV
+3. For any field where information is genuinely missing, use appropriate defaults (0 for scores, empty arrays for lists, false for booleans)
+4. All match scores should be on a scale of 0-100
+5. Always include all fields in the response even if some are empty
+6. Only return the JSON object, no additional text
+
+Now, analyze the CV against the job description and provide your results in the specified JSON format.
 """
     else:
         prompt = f"""

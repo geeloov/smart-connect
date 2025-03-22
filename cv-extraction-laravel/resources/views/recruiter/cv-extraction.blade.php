@@ -19,7 +19,7 @@
             </div>
 
             <div class="p-6 lg:p-8">
-                @if(session('success'))
+                @if(isset($success))
                     <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-r-md">
                         <div class="flex">
                             <div class="flex-shrink-0">
@@ -28,7 +28,7 @@
                                 </svg>
                             </div>
                             <div class="ml-3">
-                                <p class="text-sm">{{ session('success') }}</p>
+                                <p class="text-sm">{{ $success }}</p>
                             </div>
                         </div>
                     </div>
@@ -102,8 +102,8 @@
                     </div>
                     
                     <div>
-                        <label for="job_position" class="block text-sm font-medium text-gray-700 mb-1">Select from your job postings</label>
-                        <select id="job_position" 
+                        <label for="job_position_id" class="block text-sm font-medium text-gray-700 mb-1">Select from your job postings</label>
+                        <select id="job_position_id" name="job_position_id" 
                             class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
                             <option value="">-- Select a job position --</option>
                             @foreach($jobPositions ?? [] as $job)
@@ -329,100 +329,94 @@
 
                 <!-- Raw JSON View -->
                 <div id="raw-json" class="mt-6 hidden">
+                    @if(isset($cvData))
                     <pre id="json-display" class="bg-gray-50 p-4 rounded-lg overflow-x-auto text-xs h-96 text-gray-800">{{ json_encode($cvData, JSON_PRETTY_PRINT) }}</pre>
+                    @else
+                    <pre id="json-display" class="bg-gray-50 p-4 rounded-lg overflow-x-auto text-xs h-96 text-gray-800">{}</pre>
+                    @endif
                 </div>
                 
-                <!-- Job Matching Results -->
-                @if(isset($jobMatching))
-                <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
-                        <h2 class="text-xl font-semibold text-white">Job Matching Results</h2>
+                <!-- Job matching results -->
+                @if(isset($jobMatching) && (isset($jobMatching['success']) && $jobMatching['success'] === true))
+                <div class="bg-white shadow overflow-hidden sm:rounded-lg mt-8">
+                    <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Job Matching Results</h3>
+                        <p class="mt-1 max-w-2xl text-sm text-gray-500">The match between the CV and the job description.</p>
                     </div>
-                    
-                    <div class="p-6">
-                        <!-- Match Score -->
-                        <div class="mb-6">
-                            <h3 class="text-sm font-medium text-gray-700 mb-2">Match Score:</h3>
-                            <div class="flex items-center">
-                                <span class="text-2xl font-bold {{ $jobMatching['match_score'] >= 70 ? 'text-green-600' : ($jobMatching['match_score'] >= 40 ? 'text-yellow-600' : 'text-red-600') }}">
-                                    {{ $jobMatching['match_score'] }}%
-                                </span>
-                                <div class="ml-4 flex-1 h-2 bg-gray-200 rounded-full">
-                                    <div class="h-2 rounded-full {{ $jobMatching['match_score'] >= 70 ? 'bg-green-500' : ($jobMatching['match_score'] >= 40 ? 'bg-yellow-500' : 'bg-red-500') }}"
-                                         style="width: {{ $jobMatching['match_score'] }}%">
-                                    </div>
+                    <div class="px-4 py-5 sm:p-6">
+                        <div class="mb-4">
+                            <h4 class="text-md font-medium text-gray-700">Match Score</h4>
+                            <div class="mt-2 flex items-center">
+                                @php
+                                    $score = isset($jobMatching['match_score']) ? $jobMatching['match_score'] : 0;
+                                    $scoreColor = '';
+                                    
+                                    if($score >= 80) {
+                                        $scoreColor = 'bg-green-500';
+                                    } elseif($score >= 60) {
+                                        $scoreColor = 'bg-yellow-500';
+                                    } else {
+                                        $scoreColor = 'bg-red-500';
+                                    }
+                                @endphp
+                                <div class="w-full bg-gray-200 rounded-full h-4">
+                                    <div class="{{ $scoreColor }} h-4 rounded-full" style="width: {{ $score }}%"></div>
                                 </div>
+                                <span class="ml-3 text-lg font-semibold">{{ $score }}%</span>
                             </div>
                         </div>
-
-                        <!-- Perfect Match -->
-                        <div class="mb-6">
-                            <h3 class="text-sm font-medium text-gray-700 mb-2">Perfect Match:</h3>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $jobMatching['is_perfect_match'] ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ $jobMatching['is_perfect_match'] ? 'Yes' : 'No' }}
-                            </span>
-                        </div>
-
-                        <!-- Match Analysis -->
-                        <div class="mb-6">
-                            <h3 class="text-sm font-medium text-gray-700 mb-2">Match Analysis:</h3>
-                            <p class="text-gray-600">{{ $jobMatching['reasoning'] }}</p>
-                        </div>
-
-                        <!-- Skills Analysis -->
-                        @if(isset($jobMatching['skills_analysis']))
-                        <div class="border-t pt-6">
-                            <h3 class="text-sm font-medium text-gray-700 mb-4">Skills Analysis:</h3>
-                            
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Matched Skills -->
-                                <div>
-                                    <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Matched Skills</h4>
-                                    @if(!empty($jobMatching['skills_analysis']['matched_skills']))
-                                        <div class="flex flex-wrap gap-2">
-                                            @foreach($jobMatching['skills_analysis']['matched_skills'] as $skill)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    {{ $skill }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <p class="text-sm text-gray-500 italic">No matched skills found</p>
-                                    @endif
-                                </div>
-
-                                <!-- Missing Skills -->
-                                <div>
-                                    <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Missing Skills</h4>
-                                    @if(!empty($jobMatching['skills_analysis']['missing_skills']))
-                                        <div class="flex flex-wrap gap-2">
-                                            @foreach($jobMatching['skills_analysis']['missing_skills'] as $skill)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    {{ $skill }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    @else
-                                        <p class="text-sm text-gray-500 italic">No missing skills found</p>
-                                    @endif
-                                </div>
+                
+                        @if(isset($jobMatching['reasoning']) && !empty($jobMatching['reasoning']))
+                        <div class="mt-6">
+                            <h4 class="text-md font-medium text-gray-700">Analysis</h4>
+                            <div class="mt-2 p-4 bg-gray-50 rounded-lg">
+                                <p class="text-sm text-gray-600">
+                                    {{ $jobMatching['reasoning'] }}
+                                </p>
                             </div>
                         </div>
                         @endif
-
-                        @if(!$jobMatching['success'])
-                        <div class="mt-6 bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                            <div class="flex">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                                    </svg>
-                                </div>
-                                <div class="ml-3">
-                                    <p class="text-sm text-yellow-700">
-                                        Note: The matching service is currently experiencing issues. Basic matching results are shown instead.
-                                    </p>
-                                </div>
+                
+                        @if(isset($jobMatching['skills_analysis']) && 
+                           (isset($jobMatching['skills_analysis']['matched_skills']) || 
+                            isset($jobMatching['skills_analysis']['missing_skills'])))
+                        <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                            <!-- Matched Skills -->
+                            <div>
+                                <h4 class="text-md font-medium text-gray-700">Matched Skills</h4>
+                                @if(isset($jobMatching['skills_analysis']['matched_skills']) && count($jobMatching['skills_analysis']['matched_skills']) > 0)
+                                <ul class="mt-2 divide-y divide-gray-200">
+                                    @foreach($jobMatching['skills_analysis']['matched_skills'] as $skill)
+                                    <li class="py-2 flex items-center">
+                                        <svg class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span class="ml-2 text-sm text-gray-600">{{ $skill }}</span>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                                @else
+                                <p class="mt-2 text-sm text-gray-500">No matched skills found.</p>
+                                @endif
+                            </div>
+                
+                            <!-- Missing Skills -->
+                            <div>
+                                <h4 class="text-md font-medium text-gray-700">Missing Skills</h4>
+                                @if(isset($jobMatching['skills_analysis']['missing_skills']) && count($jobMatching['skills_analysis']['missing_skills']) > 0)
+                                <ul class="mt-2 divide-y divide-gray-200">
+                                    @foreach($jobMatching['skills_analysis']['missing_skills'] as $skill)
+                                    <li class="py-2 flex items-center">
+                                        <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span class="ml-2 text-sm text-gray-600">{{ $skill }}</span>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                                @else
+                                <p class="mt-2 text-sm text-gray-500">No missing skills identified.</p>
+                                @endif
                             </div>
                         </div>
                         @endif
@@ -533,9 +527,24 @@
         // Save Candidate functionality
         if (saveCandidate) {
             saveCandidate.addEventListener('click', function() {
-                const jsonDisplay = document.getElementById('json-display');
-                const jsonText = jsonDisplay ? jsonDisplay.textContent : '{}';
-                const jsonData = JSON.parse(jsonText);
+                // Get the CV data from the page
+                let jsonData = {};
+                
+                try {
+                    const jsonDisplay = document.getElementById('json-display');
+                    if (jsonDisplay) {
+                        jsonData = JSON.parse(jsonDisplay.textContent);
+                    } else {
+                        // Fallback if json-display element is not found
+                        @if(isset($cvData))
+                            jsonData = @json($cvData);
+                        @endif
+                    }
+                } catch (e) {
+                    console.error('Error parsing JSON data:', e);
+                    alert('Error parsing candidate data. Please try again.');
+                    return;
+                }
                 
                 // Show loading state
                 const originalText = saveCandidate.innerHTML;
@@ -543,7 +552,7 @@
                 saveCandidate.disabled = true;
                 
                 // Make AJAX call to save candidate
-                fetch('/recruiter/save-candidate', {
+                fetch('/recruiter/cv-extraction/save-candidate', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -591,7 +600,7 @@
         }
 
         // Add job position selection functionality
-        const jobPositionSelect = document.getElementById('job_position');
+        const jobPositionSelect = document.getElementById('job_position_id');
         const jobDescriptionTextarea = document.getElementById('job_description');
         
         if (jobPositionSelect && jobDescriptionTextarea) {

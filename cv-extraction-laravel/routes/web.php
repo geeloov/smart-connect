@@ -67,7 +67,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/profile/update', [RecruiterController::class, 'updateProfile'])->name('profile.update');
         Route::get('/cv-extraction', [RecruiterController::class, 'cvExtraction'])->name('cv-extraction');
         Route::post('/cv-extraction/process', [RecruiterController::class, 'cvExtractionProcess'])->name('cv-extraction.process');
-        Route::post('/cv-extraction/save-candidate', [RecruiterController::class, 'saveCandidate'])->name('recruiter.save-candidate');
+        Route::post('/cv-extraction/save-candidate', [RecruiterController::class, 'saveCandidate'])->name('save-candidate');
         Route::get('/candidates', [RecruiterController::class, 'candidates'])->name('candidates');
         Route::get('/job-matching', [RecruiterController::class, 'jobMatching'])->name('job-matching');
         

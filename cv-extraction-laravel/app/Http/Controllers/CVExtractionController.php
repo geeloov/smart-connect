@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use App\Models\JobPosition;
 
-class CvExtractionController extends Controller
+class CVExtractionController extends Controller
 {
     /**
      * Display the CV extraction form
@@ -136,6 +136,17 @@ class CvExtractionController extends Controller
             $apiData = $response->json();
             Log::info('CV extraction successful', ['data_keys' => array_keys($apiData)]);
             
+            // Ensure we have cv_data field in the response
+            if (!isset($apiData['cv_data']) && isset($apiData['data'])) {
+                $apiData['cv_data'] = $apiData['data'];
+            } else if (!isset($apiData['cv_data'])) {
+                // Create default cv_data if none exists
+                $apiData['cv_data'] = [
+                    'name' => 'Unknown',
+                    'skills' => []
+                ];
+            }
+            
             // Return the extracted CV data
             return $apiData;
             
@@ -183,9 +194,9 @@ class CvExtractionController extends Controller
                 // Return a properly structured error response
                 return [
                     'success' => false,
-                    'match_score' => 50,
+                    'match_score' => 0,
                     'is_perfect_match' => false,
-                    'reasoning' => 'The AI service experienced a temporary issue. The CV has been extracted, but detailed matching is unavailable right now.',
+                    'reasoning' => 'The CV extraction service encountered an error. Status: ' . $response->status(),
                     'skills_analysis' => [
                         'matched_skills' => [],
                         'missing_skills' => []
@@ -195,21 +206,99 @@ class CvExtractionController extends Controller
             
             $matchingData = $response->json();
             
-            // Extract the job_matching data from the response
-            $jobMatching = $matchingData['job_matching'] ?? [];
+            // Log the full API response for debugging
+            Log::info('Full API response from job matching service', [
+                'api_response' => json_encode($matchingData)
+            ]);
             
-            Log::info('Job matching successful', ['data_keys' => array_keys($jobMatching)]);
-            
-            return [
+            // Initialize standardized response structure
+            $result = [
                 'success' => true,
-                'match_score' => $jobMatching['match_score'] ?? 50,
-                'is_perfect_match' => $jobMatching['is_perfect_match'] ?? false,
-                'reasoning' => $jobMatching['reasoning'] ?? 'Analysis completed',
-                'skills_analysis' => $jobMatching['skills_analysis'] ?? [
+                'match_score' => 0,
+                'is_perfect_match' => false,
+                'reasoning' => 'No analysis provided.',
+                'skills_analysis' => [
                     'matched_skills' => [],
                     'missing_skills' => []
                 ]
             ];
+
+            // Extract the job_matching data from the response if it exists
+            if (isset($matchingData['job_matching'])) {
+                $jobMatching = $matchingData['job_matching'];
+                Log::info('Job matching successful (job_matching format)', ['data_keys' => array_keys($jobMatching)]);
+                
+                // Map fields from the standardized format
+                $result['match_score'] = $jobMatching['match_score'] ?? 0;
+                $result['is_perfect_match'] = $jobMatching['is_perfect_match'] ?? false;
+                $result['reasoning'] = $jobMatching['reasoning'] ?? 'No analysis provided.';
+                
+                // Extract skills analysis
+                if (isset($jobMatching['skills_analysis'])) {
+                    $result['skills_analysis'] = [
+                        'matched_skills' => $jobMatching['skills_analysis']['matched_skills'] ?? [],
+                        'missing_skills' => $jobMatching['skills_analysis']['missing_skills'] ?? []
+                    ];
+                }
+                
+                // Extract experience and education analysis if available
+                if (isset($jobMatching['experience_analysis'])) {
+                    $result['experience_analysis'] = $jobMatching['experience_analysis'];
+                }
+                
+                if (isset($jobMatching['education_analysis'])) {
+                    $result['education_analysis'] = $jobMatching['education_analysis'];
+                }
+            } 
+            // For backward compatibility and legacy response formats
+            else if (isset($matchingData['match_score']) || isset($matchingData['reasoning'])) {
+                Log::info('Job matching using direct format', ['data_keys' => array_keys($matchingData)]);
+                
+                // Map direct fields
+                $result['match_score'] = $matchingData['match_score'] ?? 0;
+                $result['is_perfect_match'] = $matchingData['is_perfect_match'] ?? false;
+                $result['reasoning'] = $matchingData['reasoning'] ?? 'No analysis provided.';
+                
+                // Handle different skills analysis structures
+                if (isset($matchingData['skills_analysis'])) {
+                    if (isset($matchingData['skills_analysis']['matched_skills'])) {
+                        $result['skills_analysis']['matched_skills'] = $matchingData['skills_analysis']['matched_skills'];
+                    }
+                    
+                    if (isset($matchingData['skills_analysis']['missing_skills'])) {
+                        $result['skills_analysis']['missing_skills'] = $matchingData['skills_analysis']['missing_skills'];
+                    }
+                } else if (isset($matchingData['skills'])) {
+                    // Alternative structure with a 'skills' key
+                    if (isset($matchingData['skills']['matched'])) {
+                        $result['skills_analysis']['matched_skills'] = $matchingData['skills']['matched'];
+                    }
+                    
+                    if (isset($matchingData['skills']['missing'])) {
+                        $result['skills_analysis']['missing_skills'] = $matchingData['skills']['missing'];
+                    }
+                }
+                
+                // Map experience and education if available
+                if (isset($matchingData['experience_analysis'])) {
+                    $result['experience_analysis'] = $matchingData['experience_analysis'];
+                }
+                
+                if (isset($matchingData['education_analysis'])) {
+                    $result['education_analysis'] = $matchingData['education_analysis'];
+                }
+            } else {
+                Log::warning('Unexpected API response format', [
+                    'data_keys' => is_array($matchingData) ? array_keys($matchingData) : 'not an array'
+                ]);
+            }
+            
+            // Ensure match_score is numeric
+            if (!is_numeric($result['match_score'])) {
+                $result['match_score'] = 0;
+            }
+            
+            return $result;
             
         } catch (\Exception $e) {
             Log::error('Job matching exception', [
@@ -219,9 +308,9 @@ class CvExtractionController extends Controller
             
             return [
                 'success' => false,
-                'match_score' => 50,
+                'match_score' => 0,
                 'is_perfect_match' => false,
-                'reasoning' => 'An error occurred during the matching process.',
+                'reasoning' => 'An error occurred during the matching process: ' . $e->getMessage(),
                 'skills_analysis' => [
                     'matched_skills' => [],
                     'missing_skills' => []
