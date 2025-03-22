@@ -46,7 +46,7 @@ return [
      * CV Extraction API Service
      */
     'cv_extraction' => [
-        'api_url' => env('CV_EXTRACTION_API_URL', 'http://your-actual-api-url/api/extract-cv'),
+        'api_url' => env('CV_EXTRACTION_API_URL', 'http://localhost:5000/api/extract-cv'),
     ],
 
 ];

@@ -170,4 +170,125 @@ class JobSeekerController extends Controller
 
         return view('job-seeker.job-matches');
     }
+
+    /**
+     * Show the job application form for a specific job.
+     */
+    public function createJobApplication($jobId)
+    {
+        $jobPosition = JobPosition::findOrFail($jobId);
+        
+        // Check for flashed CV data from session (if user has already uploaded CV)
+        $cvData = session('cvData');
+        $jobMatching = session('jobMatching');
+        
+        return view('job-seeker.create-application', compact('jobPosition', 'cvData', 'jobMatching'));
+    }
+
+    /**
+     * Store a new job application.
+     */
+    public function storeJobApplication(Request $request, $jobId)
+    {
+        // Validate the request
+        $request->validate([
+            'cv_file' => 'required_without:use_existing_cv|mimes:pdf|max:10240', // Required if not using existing CV
+            'cover_letter' => 'nullable|string|max:5000',
+            'use_existing_cv' => 'nullable|boolean',
+        ]);
+        
+        try {
+            $jobPosition = JobPosition::findOrFail($jobId);
+            $user = Auth::user();
+            
+            // Check if the user has already applied for this job
+            $existingApplication = JobApplication::where('user_id', $user->id)
+                ->where('job_position_id', $jobId)
+                ->first();
+                
+            if ($existingApplication) {
+                return redirect()->back()->with('error', 'You have already applied for this position.');
+            }
+            
+            // Process CV file
+            $cvFilename = null;
+            $cvData = null;
+            $compatibilityScore = null;
+            $compatibilityAnalysis = null;
+            
+            // Get extraction controller
+            $extractionController = app()->make('App\Http\Controllers\CvExtractionController');
+            
+            if ($request->hasFile('cv_file')) {
+                // Handle new CV upload
+                $file = $request->file('cv_file');
+                $cvFilename = time() . '_' . $user->id . '_' . $file->getClientOriginalName();
+                
+                // Store the file
+                $file->storeAs('cvs', $cvFilename, 'public');
+                
+                // Extract CV data
+                $extractionResult = $extractionController->extract($request);
+                $cvData = $extractionResult['cv_data'] ?? null;
+                
+                // Match with job description if available
+                if ($jobPosition->description) {
+                    try {
+                        $matchingResults = $extractionController->matchWithJob($file, $jobPosition->description);
+                        $compatibilityScore = $matchingResults['score'] ?? null;
+                        $compatibilityAnalysis = $matchingResults;
+                    } catch (\Exception $e) {
+                        Log::warning('Job matching failed but continuing with application', [
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            } elseif ($request->has('use_existing_cv') && session()->has('cvData')) {
+                // Use CV data from session (previously uploaded)
+                $cvData = session('cvData');
+                $compatibilityScore = session('jobMatching.score') ?? null;
+                $compatibilityAnalysis = session('jobMatching') ?? null;
+                
+                // Should have a way to reference the previously uploaded file
+                // For now, we'll assume there's another storage mechanism for this
+                $cvFilename = 'existing_cv_' . time() . '_' . $user->id . '.pdf';
+            }
+            
+            // Create job application
+            $application = new JobApplication();
+            $application->user_id = $user->id;
+            $application->job_position_id = $jobId;
+            $application->cv_filename = $cvFilename;
+            $application->cover_letter = $request->cover_letter;
+            $application->cv_data = $cvData ? json_encode($cvData) : null;
+            $application->compatibility_score = $compatibilityScore;
+            $application->compatibility_analysis = $compatibilityAnalysis ? json_encode($compatibilityAnalysis) : null;
+            $application->status = 'pending';
+            $application->save();
+            
+            return redirect()->route('job-seeker.applications')
+                ->with('success', 'Your application has been submitted successfully!');
+                
+        } catch (\Exception $e) {
+            Log::error('Error submitting job application: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return redirect()->back()
+                ->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Display all job applications for the authenticated user.
+     */
+    public function applications()
+    {
+        $applications = Auth::user()->jobApplications()
+            ->with('jobPosition')
+            ->latest()
+            ->paginate(10);
+            
+        return view('job-seeker.applications', compact('applications'));
+    }
 }

@@ -262,6 +262,7 @@ Make sure every possible detail from the CV is included in the JSON. If a field 
         
         generated_text = response.choices[0].message.content.strip()
         
+        # More robust JSON extraction
         # Try to extract JSON from the response
         json_start = generated_text.find('{')
         json_end = generated_text.rfind('}') + 1
@@ -270,10 +271,36 @@ Make sure every possible detail from the CV is included in the JSON. If a field 
             json_str = generated_text[json_start:json_end]
             try:
                 return json.loads(json_str)
-            except json.JSONDecodeError:
-                print("Error parsing JSON from AI response")
-                return {"error": "Invalid JSON from AI"}
+            except json.JSONDecodeError as e:
+                print(f"Error parsing JSON from AI response: {e}")
+                print(f"Raw JSON string: {json_str[:100]}...")  # Print first 100 chars for debugging
+                
+                # Try to clean up the JSON and try again
+                try:
+                    # Replace common issues that might break JSON
+                    cleaned_json = json_str.replace('\n', ' ').replace('\r', ' ')
+                    # Try to parse again
+                    return json.loads(cleaned_json)
+                except json.JSONDecodeError:
+                    # If still failing, return structured error
+                    if job_description:
+                        return {
+                            "cv_data": {"name": "Unknown", "skills": []},
+                            "job_matching": {
+                                "match_score": 50,
+                                "is_perfect_match": False,
+                                "reasoning": "Could not fully analyze CV due to technical issues.",
+                                "skills_analysis": {
+                                    "matched_skills": [],
+                                    "missing_skills": [],
+                                    "skills_match_score": 0
+                                }
+                            }
+                        }
+                    else:
+                        return {"cv_data": {"name": "Unknown", "skills": []}}
         else:
+            print("No JSON structure found in AI response")
             return {"error": "No JSON found in AI response"}
     
     except Exception as e:
@@ -395,8 +422,21 @@ IMPORTANT NOTE FOR SKILLS ANALYSIS:
         # Process CV with Enhanced Job Description
         result = process_cv_with_together_ai(cv_text, enhanced_job_description)
         
-        if "error" in result:
-            return jsonify(result), 500
+        # Improved error handling
+        if isinstance(result, dict) and "error" in result:
+            error_message = result["error"]
+            print(f"Error in AI processing: {error_message}")
+            return jsonify({
+                "job_matching": {
+                    "match_score": 50,
+                    "is_perfect_match": False,
+                    "reasoning": f"Error in AI processing: {error_message}. Please try again later.",
+                    "skills_analysis": {
+                        "matched_skills": [],
+                        "missing_skills": []
+                    }
+                }
+            }), 200  # Return 200 with default values instead of 500
         
         # Extract the detailed analysis from the new format
         if "job_matching" in result:
@@ -438,12 +478,45 @@ IMPORTANT NOTE FOR SKILLS ANALYSIS:
         
         # Fallback to existing analysis generation if the new format is not available
         elif "cv_data" in result:
-            # Keep the existing compatibility analysis calculation
-            
+            # For backward compatibility, create a default job_matching object
+            result["job_matching"] = {
+                "match_score": 50,
+                "is_perfect_match": False,
+                "reasoning": "Basic analysis completed. Unable to provide detailed matching.",
+                "skills_analysis": {
+                    "matched_skills": [],
+                    "missing_skills": []
+                }
+            }
             return jsonify(result), 200
+        
+        # If we don't recognize the response format, return a structured error response
+        return jsonify({
+            "job_matching": {
+                "match_score": 50,
+                "is_perfect_match": False,
+                "reasoning": "Unable to process matching at this time due to an unexpected response format.",
+                "skills_analysis": {
+                    "matched_skills": [],
+                    "missing_skills": []
+                }
+            }
+        }), 200
     
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        print(f"Error in match_cv_with_job: {str(e)}")
+        # Return a structured error response
+        return jsonify({
+            "job_matching": {
+                "match_score": 50,
+                "is_perfect_match": False,
+                "reasoning": f"An error occurred during processing: {str(e)}",
+                "skills_analysis": {
+                    "matched_skills": [],
+                    "missing_skills": []
+                }
+            }
+        }), 200  # Return 200 with default values instead of 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000) 
