@@ -130,179 +130,67 @@ class RecruiterController extends Controller
         ]);
 
         try {
-            // Get the CV file and store it for future reference
+            // Log the original file details
             $file = $request->file('cv_file');
-            
-            // Log the file details
             Log::info('CV file uploaded by recruiter', [
                 'filename' => $file->getClientOriginalName(),
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType()
             ]);
             
-            // Get or prepare the job description and related info
-            $jobDescription = '';
-            $jobTitle = '';
-            $requiredSkills = '';
-            $experienceYears = '';
-            $educationRequirements = '';
-            
-            // Get job position information if selected
+            // If a job position is selected, get its description
             if ($request->job_position_id) {
                 $jobPosition = JobPosition::findOrFail($request->job_position_id);
                 $jobDescription = $jobPosition->description;
-                $jobTitle = $jobPosition->title;
                 
-                // Extract other job details if available
-                $requiredSkills = $jobPosition->requirements ?? '';
-                $experienceYears = $jobPosition->experience_years ?? '';
-                $educationRequirements = $jobPosition->education_requirements ?? '';
-                
-                // Add job details to the request
-                $request->merge([
-                    'job_description' => $jobDescription,
-                    'job_title' => $jobTitle,
-                    'required_skills' => $requiredSkills,
-                    'experience_years' => $experienceYears,
-                    'education_requirements' => $educationRequirements
-                ]);
-            } else if ($request->has('job_description')) {
-                $jobDescription = $request->job_description;
+                // Add job description to the request
+                $request->merge(['job_description' => $jobDescription]);
             }
             
             // Get extraction controller
             $extractionController = app()->make('App\Http\Controllers\CVExtractionController');
             
-            // Step 1: Always extract CV data
-            $apiData = null;
-            $cvData = null;
-            $matchingData = null;
-            $matchingError = null;
+            // Step 1: Extract the CV data
+            $extractedData = $extractionController->extract($request);
             
-            try {
-                // Extract CV data
-                $apiData = $extractionController->extract($request);
-                
-                if (isset($apiData['cv_data'])) {
-                    $cvData = $apiData['cv_data'];
-                    Log::info('CV data extracted successfully', ['data_keys' => array_keys($cvData)]);
-                } else {
-                    throw new \Exception('No CV data returned from extraction API');
+            // Step 2: If job description is provided, try to match CV with job
+            $jobDescription = $request->job_description ?? '';
+            $matchingData = null;
+            
+            if (!empty($jobDescription)) {
+                try {
+                    Log::info('Sending CV data for job matching', [
+                        'job_description_length' => strlen($jobDescription)
+                    ]);
+                    
+                    // Get matching data from API
+                    $matchingData = $extractionController->matchWithJob($file, $jobDescription);
+                    
+                } catch (\Exception $e) {
+                    Log::warning('Job matching failed but continuing with CV data', [
+                        'error' => $e->getMessage()
+                    ]);
+                    // Use default error response structure from matchWithJob
+                    $matchingData = [
+                        'success' => false,
+                        'match_score' => 50,
+                        'is_perfect_match' => false,
+                        'reasoning' => 'The AI service experienced a temporary issue. The CV has been extracted, but detailed matching is unavailable right now.',
+                        'skills_analysis' => [
+                            'matched_skills' => [],
+                            'missing_skills' => []
+                        ]
+                    ];
                 }
-                
-                // Step 2: If job description is provided, match CV with job
-                if (!empty($jobDescription)) {
-                    try {
-                        Log::info('Sending CV data for job matching', [
-                            'job_description_length' => strlen($jobDescription)
-                        ]);
-                        
-                        // Pass the original file, not the data
-                        $matchingResult = $extractionController->matchWithJob($file, $jobDescription);
-                        
-                        // Check for errors in the matching result
-                        if (isset($matchingResult['error']) && $matchingResult['error'] === true) {
-                            throw new \Exception($matchingResult['message']);
-                        }
-                        
-                        // Transform the job matching data to the format expected by the view
-                        $formattedJobMatching = [];
-                        
-                        if (isset($matchingResult['job_matching'])) {
-                            $jobMatching = $matchingResult['job_matching'];
-                            
-                            // Set the score
-                            $formattedJobMatching['score'] = $jobMatching['match_score'] ?? 0;
-                            
-                            // Get matching skills from skills_analysis
-                            if (isset($jobMatching['skills_analysis']) && isset($jobMatching['skills_analysis']['matched_skills'])) {
-                                $formattedJobMatching['matching_skills'] = $jobMatching['skills_analysis']['matched_skills'];
-                            }
-                            
-                            // Add missing skills
-                            if (isset($jobMatching['skills_analysis']) && isset($jobMatching['skills_analysis']['missing_skills'])) {
-                                $formattedJobMatching['missing_skills'] = $jobMatching['skills_analysis']['missing_skills'];
-                            }
-                            
-                            // Add reasoning
-                            if (isset($jobMatching['reasoning'])) {
-                                $formattedJobMatching['reasoning'] = $jobMatching['reasoning'];
-                            }
-                            
-                            // Add education and experience analyses
-                            if (isset($jobMatching['education_analysis'])) {
-                                $formattedJobMatching['education'] = $jobMatching['education_analysis'];
-                            }
-                            
-                            if (isset($jobMatching['experience_analysis'])) {
-                                $formattedJobMatching['experience'] = $jobMatching['experience_analysis'];
-                            }
-                            
-                            // Add is_perfect_match flag
-                            $formattedJobMatching['is_perfect_match'] = $jobMatching['is_perfect_match'] ?? false;
-                            
-                        } elseif (isset($matchingResult['match_score'])) {
-                            // Direct match score from the API
-                            $formattedJobMatching['score'] = $matchingResult['match_score'];
-                            
-                            // Try to get other data
-                            if (isset($matchingResult['compatibility_analysis'])) {
-                                $compAnalysis = is_string($matchingResult['compatibility_analysis']) ? 
-                                                json_decode($matchingResult['compatibility_analysis'], true) : 
-                                                $matchingResult['compatibility_analysis'];
-                                
-                                if (isset($compAnalysis['matching_skills'])) {
-                                    $formattedJobMatching['matching_skills'] = $compAnalysis['matching_skills'];
-                                }
-                                
-                                if (isset($compAnalysis['missing_skills'])) {
-                                    $formattedJobMatching['missing_skills'] = $compAnalysis['missing_skills'];
-                                }
-                                
-                                if (isset($compAnalysis['reasoning'])) {
-                                    $formattedJobMatching['reasoning'] = $compAnalysis['reasoning'];
-                                }
-                            }
-                        }
-                        
-                        $matchingData = $formattedJobMatching;
-                        
-                        Log::info('Job matching completed successfully', [
-                            'matching_data_keys' => is_array($matchingData) ? array_keys($matchingData) : 'not an array'
-                        ]);
-                        
-                    } catch (\Exception $e) {
-                        // Store the error message but continue with CV data
-                        $matchingError = $e->getMessage();
-                        Log::warning('Job matching failed but continuing with CV data', [
-                            'error' => $matchingError
-                        ]);
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::error('CV extraction failed: ' . $e->getMessage(), [
-                    'trace' => $e->getTraceAsString()
-                ]);
-                
-                return redirect()->route('recruiter.cv-extraction')
-                    ->with('error', 'CV extraction failed: ' . $e->getMessage());
             }
             
-            // Return results to view
-            $redirectResponse = redirect()->route('recruiter.cv-extraction')
-                ->with('cvData', $cvData)
+            // Flash the data to the session
+            return redirect()->route('recruiter.cv-extraction')
+                ->with('cvData', $extractedData['cv_data'] ?? null)
                 ->with('jobMatching', $matchingData)
                 ->with('jobDescription', $jobDescription)
                 ->with('success', 'CV processed successfully!');
                 
-            // Add matching error if present
-            if ($matchingError) {
-                $redirectResponse->with('matchingError', $matchingError);
-                $redirectResponse->with('warning', 'CV data extracted successfully, but job matching failed: ' . $matchingError);
-            }
-            
-            return $redirectResponse;
-            
         } catch (\Exception $e) {
             Log::error('Error processing CV upload for recruiter: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()

@@ -22,8 +22,8 @@ class CvExtractionController extends Controller
     public function process(Request $request)
     {
         $request->validate([
-            'cv_file' => 'required|mimes:pdf|max:10240', // 10MB max
-            'job_description' => 'nullable|string',
+            'cv_file' => 'required|file|mimes:pdf|max:10240', // 10MB max
+            'job_description' => 'nullable|string|max:50000'
         ]);
         
         try {
@@ -35,13 +35,13 @@ class CvExtractionController extends Controller
             
             // Step 2: If job description is provided, try to match CV with job
             $jobDescription = $request->job_description ?? '';
-            $matchingData = null;
+            $matchingResults = null;
             $matchingError = null;
             
             if (!empty($jobDescription)) {
                 try {
                     // Important: Pass the original file, not extracted data
-                    $matchingData = $this->matchWithJob($file, $jobDescription);
+                    $matchingResults = $this->matchWithJob($file, $jobDescription);
                 } catch (\Exception $e) {
                     // Store the error message but continue with CV extraction
                     $matchingError = $e->getMessage();
@@ -51,10 +51,17 @@ class CvExtractionController extends Controller
                 }
             }
             
+            if (!$matchingResults['success']) {
+                Log::warning('Job matching failed', [
+                    'error' => $matchingResults['error'],
+                    'reasoning' => $matchingResults['reasoning']
+                ]);
+            }
+            
             // Combine the results
             $result = [
                 'cvData' => $extractedData['cv_data'] ?? null,
-                'jobMatching' => $matchingData ?? null,
+                'jobMatching' => $matchingResults,
                 'jobDescription' => $jobDescription,
                 'matchingError' => $matchingError // Pass the error to the view
             ];
@@ -63,6 +70,10 @@ class CvExtractionController extends Controller
             return view('cv-extraction.result', $result);
             
         } catch (\Exception $e) {
+            Log::error('CV processing failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
@@ -132,78 +143,77 @@ class CvExtractionController extends Controller
     public function matchWithJob($cvFile, $jobDescription)
     {
         try {
-            // Set the API URL for job matching
             $apiUrl = 'http://127.0.0.1:5000/api/match-cv-with-job';
             
             Log::info('Sending CV data for job matching', [
                 'api_url' => $apiUrl,
                 'job_description_length' => strlen($jobDescription),
-                'file_name' => $cvFile instanceof \Illuminate\Http\UploadedFile ? $cvFile->getClientOriginalName() : 'Unknown file'
+                'file_name' => $cvFile->getClientOriginalName()
             ]);
             
-            // Ensure we have a valid file to send
-            if (!$cvFile instanceof \Illuminate\Http\UploadedFile) {
-                throw new \Exception('Invalid CV file provided for job matching');
-            }
-            
-            // Call the job matching API - send the file, not the data
+            // Create the multipart form data request
             $response = Http::timeout(60)
-                ->withHeaders(['Accept' => 'application/json'])
                 ->attach(
                     'cv_file', 
                     file_get_contents($cvFile->path()), 
                     $cvFile->getClientOriginalName()
                 )
                 ->post($apiUrl, [
-                    'job_description' => $jobDescription,
-                    'job_title' => request('job_title', 'Job Position'),
-                    'required_skills' => request('required_skills', ''),
-                    'experience_years' => request('experience_years', ''),
-                    'education_requirements' => request('education_requirements', '')
+                    'job_description' => $jobDescription
                 ]);
                 
-            // Check if the API call was successful
             if (!$response->successful()) {
                 Log::error('Job matching API error', [
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
                 
+                // Return a properly structured error response
                 return [
-                    'error' => true,
-                    'message' => 'Job matching API error: ' . $response->status(),
-                    'details' => $response->json() ?: $response->body()
+                    'success' => false,
+                    'match_score' => 50,
+                    'is_perfect_match' => false,
+                    'reasoning' => 'The AI service experienced a temporary issue. The CV has been extracted, but detailed matching is unavailable right now.',
+                    'skills_analysis' => [
+                        'matched_skills' => [],
+                        'missing_skills' => []
+                    ]
                 ];
             }
             
-            // Get the API response data as JSON
             $matchingData = $response->json();
             
-            if (!$matchingData || !is_array($matchingData)) {
-                Log::error('Invalid job matching response format', [
-                    'response' => $response->body()
-                ]);
-                
-                return [
-                    'error' => true,
-                    'message' => 'Invalid response format from job matching API'
-                ];
-            }
+            // Extract the job_matching data from the response
+            $jobMatching = $matchingData['job_matching'] ?? [];
             
-            Log::info('Job matching successful', ['data_keys' => array_keys($matchingData)]);
+            Log::info('Job matching successful', ['data_keys' => array_keys($jobMatching)]);
             
-            return $matchingData;
+            return [
+                'success' => true,
+                'match_score' => $jobMatching['match_score'] ?? 50,
+                'is_perfect_match' => $jobMatching['is_perfect_match'] ?? false,
+                'reasoning' => $jobMatching['reasoning'] ?? 'Analysis completed',
+                'skills_analysis' => $jobMatching['skills_analysis'] ?? [
+                    'matched_skills' => [],
+                    'missing_skills' => []
+                ]
+            ];
             
         } catch (\Exception $e) {
             Log::error('Job matching exception', [
                 'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
+                'trace' => $e->getTraceAsString()
             ]);
             
             return [
-                'error' => true,
-                'message' => $e->getMessage()
+                'success' => false,
+                'match_score' => 50,
+                'is_perfect_match' => false,
+                'reasoning' => 'An error occurred during the matching process.',
+                'skills_analysis' => [
+                    'matched_skills' => [],
+                    'missing_skills' => []
+                ]
             ];
         }
     }
@@ -235,5 +245,116 @@ class CvExtractionController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    private function matchCVWithJob($cvData, $jobDescription)
+    {
+        try {
+            $apiUrl = config('services.cv_matching.url', 'http://127.0.0.1:5000/api/match-cv-with-job');
+            
+            Log::info('Sending CV data for job matching', [
+                'api_url' => $apiUrl,
+                'job_description_length' => strlen($jobDescription),
+                'file_name' => $cvData['file_name'] ?? 'unknown'
+            ]);
+
+            $response = Http::timeout(30)->post($apiUrl, [
+                'cv_data' => $cvData,
+                'job_description' => $jobDescription
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Job matching API error', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                
+                // Return as array, not inside another array
+                return [
+                    'success' => false,
+                    'error' => 'API request failed',
+                    'match_score' => 0,
+                    'reasoning' => 'Unable to process matching at this time.',
+                    'skills_analysis' => [],
+                    'is_perfect_match' => false
+                ];
+            }
+
+            $matchingData = $response->json();
+            
+            // Validate the response structure
+            if (!$this->isValidMatchingResponse($matchingData)) {
+                Log::error('Invalid matching response structure', [
+                    'response' => $matchingData
+                ]);
+                
+                return [
+                    'success' => false,
+                    'error' => 'Invalid response format',
+                    'match_score' => 0,
+                    'reasoning' => 'System received invalid response format.',
+                    'skills_analysis' => [],
+                    'is_perfect_match' => false
+                ];
+            }
+
+            Log::info('Job matching completed successfully', [
+                'matching_data_keys' => array_keys($matchingData)
+            ]);
+
+            return array_merge(['success' => true], $matchingData);
+
+        } catch (\Exception $e) {
+            Log::error('Job matching exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'error' => 'Internal processing error',
+                'match_score' => 0,
+                'reasoning' => 'An error occurred while processing the match.',
+                'skills_analysis' => [],
+                'is_perfect_match' => false
+            ];
+        }
+    }
+
+    private function isValidMatchingResponse($data)
+    {
+        // Make sure $data is an array
+        if (!is_array($data)) {
+            return false;
+        }
+
+        $requiredKeys = [
+            'match_score',
+            'reasoning',
+            'skills_analysis',
+            'is_perfect_match'
+        ];
+        
+        // Check if all required keys exist
+        foreach ($requiredKeys as $key) {
+            if (!array_key_exists($key, $data)) {
+                return false;
+            }
+        }
+        
+        // Validate data types
+        if (!is_numeric($data['match_score']) || 
+            !is_string($data['reasoning']) || 
+            !is_array($data['skills_analysis']) || 
+            !is_bool($data['is_perfect_match'])) {
+            return false;
+        }
+        
+        // Validate match_score range
+        if ($data['match_score'] < 0 || $data['match_score'] > 100) {
+            return false;
+        }
+        
+        return true;
     }
 }
