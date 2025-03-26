@@ -3,7 +3,21 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
     <div class="max-w-3xl mx-auto">
-        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <!-- Status Message -->
+        @if(session('success'))
+        <div class="bg-green-50 border border-green-200 text-green-800 rounded-lg p-4 mb-6">
+            {{ session('success') }}
+        </div>
+        @endif
+        
+        @if(session('error'))
+        <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 mb-6">
+            {{ session('error') }}
+        </div>
+        @endif
+        
+        <!-- Profile Information Card -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden mb-6">
             <div class="bg-gradient-to-r from-[#B9FF66]/80 to-[#B9FF66]/30 px-6 py-4">
                 <h1 class="text-xl font-bold text-dark flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -14,8 +28,6 @@
             </div>
             
             <div class="p-6">
-                <!-- Status Message -->
-
                 <form action="{{ route('job-seeker.profile.update') }}" method="POST" class="space-y-6">
                     @csrf
                     @method('PUT')
@@ -64,7 +76,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                                         </svg>
                                     </div>
-                                    <input type="text" name="phone" id="phone" value="{{ old('phone', $user->candidate->phone ?? '') }}" class="block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#B9FF66] focus:border-[#B9FF66] sm:text-sm" placeholder="+1 (555) 987-6543">
+                                    <input type="text" name="phone" id="phone" value="{{ old('phone', $user->phone ?? '') }}" class="block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#B9FF66] focus:border-[#B9FF66] sm:text-sm" placeholder="+1 (555) 987-6543">
                                 </div>
                                 @error('phone')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -80,7 +92,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         </svg>
                                     </div>
-                                    <input type="text" name="location" id="location" value="{{ old('location', $user->candidate->location ?? '') }}" class="block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#B9FF66] focus:border-[#B9FF66] sm:text-sm" placeholder="City, Country">
+                                    <input type="text" name="location" id="location" value="{{ old('location', $user->location ?? '') }}" class="block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#B9FF66] focus:border-[#B9FF66] sm:text-sm" placeholder="City, Country">
                                 </div>
                                 @error('location')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -94,7 +106,7 @@
                         
                         <div>
                             <label for="bio" class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-                            <textarea name="bio" id="bio" rows="4" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#B9FF66] focus:border-[#B9FF66] sm:text-sm" placeholder="Write a short bio about yourself...">{{ old('bio', $user->candidate->bio ?? '') }}</textarea>
+                            <textarea name="bio" id="bio" rows="4" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#B9FF66] focus:border-[#B9FF66] sm:text-sm" placeholder="Write a short bio about yourself...">{{ old('bio', $user->bio ?? '') }}</textarea>
                             @error('bio')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -110,6 +122,220 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+        
+        <!-- CV Management Card -->
+        <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div class="bg-gradient-to-r from-indigo-500/80 to-indigo-500/30 px-6 py-4">
+                <h1 class="text-xl font-bold text-white flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    My CV Documents
+                </h1>
+            </div>
+            
+            <div class="p-6">
+                <!-- CV Upload Form -->
+                <form action="{{ route('job-seeker.cv.upload') }}" method="POST" enctype="multipart/form-data" class="mb-6">
+                    @csrf
+                    
+                    <div class="border border-gray-200 rounded-lg p-4 mb-4">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Upload CV (PDF format)</label>
+                            
+                            <div class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-500 transition-colors">
+                                <div class="space-y-1 text-center">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                    </svg>
+                                    <div class="flex justify-center text-sm text-gray-600">
+                                        <label for="cv_file" id="cv_upload_label" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none">
+                                            <span>Upload a file</span>
+                                            <input id="cv_file" name="cv_file" type="file" accept=".pdf" class="sr-only" required>
+                                        </label>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PDF up to 10MB</p>
+                                    <p id="selected_filename" class="mt-2 text-sm text-gray-600 hidden"></p>
+                                </div>
+                            </div>
+                            
+                            <script>
+                                document.addEventListener('DOMContentLoaded', function() {
+                                    const uploadArea = document.querySelector('.border-2.border-gray-300.border-dashed');
+                                    const fileInput = document.getElementById('cv_file');
+                                    const filenameDisplay = document.getElementById('selected_filename');
+                                    
+                                    // Make the entire upload area clickable
+                                    if (uploadArea && fileInput) {
+                                        uploadArea.addEventListener('click', function() {
+                                            fileInput.click();
+                                        });
+                                    }
+                                    
+                                    // Display the selected filename
+                                    if (fileInput && filenameDisplay) {
+                                        fileInput.addEventListener('change', function() {
+                                            if (fileInput.files.length > 0) {
+                                                filenameDisplay.textContent = 'Selected file: ' + fileInput.files[0].name;
+                                                filenameDisplay.classList.remove('hidden');
+                                                uploadArea.classList.add('border-indigo-500');
+                                            } else {
+                                                filenameDisplay.classList.add('hidden');
+                                                uploadArea.classList.remove('border-indigo-500');
+                                            }
+                                        });
+                                    }
+                                });
+                            </script>
+                            
+                            <p class="mt-2 text-sm text-gray-500">
+                                Your CV will be analyzed to extract your skills, education, and experience.
+                            </p>
+                            
+                            @error('cv_file')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <div class="flex items-center">
+                            <input id="make_default" name="make_default" type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                            <label for="make_default" class="ml-2 block text-sm text-gray-900">
+                                Set as default CV
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-end">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            Upload CV
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Existing CVs List -->
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Saved CVs</h3>
+                    
+                    @if($user->cvs && $user->cvs->count() > 0)
+                        <div class="border border-gray-200 rounded-lg divide-y divide-gray-200">
+                            @foreach($user->cvs as $cv)
+                                <div class="p-4 flex items-center justify-between">
+                                    <div class="flex items-center space-x-3">
+                                        <!-- PDF Icon -->
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-10 w-10 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                        
+                                        <!-- CV Details -->
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">
+                                                {{ $cv->file_name }}
+                                                @if($cv->is_default)
+                                                    <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                        Default
+                                                    </span>
+                                                @endif
+                                            </p>
+                                            <p class="text-sm text-gray-500">
+                                                Uploaded: {{ $cv->created_at->format('M d, Y') }} • {{ round($cv->file_size / 1024, 2) }} KB
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Action Buttons -->
+                                    <div class="flex items-center space-x-2">
+                                        @if(!$cv->is_default)
+                                            <form method="POST" action="{{ route('job-seeker.cv.set-default', $cv) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" class="inline-flex items-center px-3 py-1 border border-indigo-300 text-xs font-medium rounded-md text-indigo-700 bg-indigo-50 hover:bg-indigo-100">
+                                                    Set as Default
+                                                </button>
+                                            </form>
+                                        @endif
+                                        
+                                        <a href="{{ route('job-seeker.cv.view', $cv) }}" class="inline-flex items-center px-3 py-1 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                            View
+                                        </a>
+                                        
+                                        <form method="POST" action="{{ route('job-seeker.cv.delete', $cv) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this CV?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="inline-flex items-center px-3 py-1 border border-red-300 text-xs font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                                
+                                @if($cv->is_default && $cv->processed_at && ($cv->extracted_skills || $cv->extracted_education || $cv->extracted_experience))
+                                <div class="p-4 bg-gray-50">
+                                    <h4 class="text-sm font-medium text-gray-900 mb-3">Extracted Data:</h4>
+                                    
+                                    <div class="space-y-4">
+                                        @if($cv->extracted_skills)
+                                        <div>
+                                            <h5 class="text-xs font-medium text-gray-700 mb-2">Skills:</h5>
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach(is_array($cv->extracted_skills) ? $cv->extracted_skills : json_decode($cv->extracted_skills, true) as $skill)
+                                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                                        {{ is_array($skill) ? $skill['name'] ?? $skill : $skill }}
+                                                    </span>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                        @endif
+                                        
+                                        @if($cv->extracted_education)
+                                        <div>
+                                            <h5 class="text-xs font-medium text-gray-700 mb-2">Education:</h5>
+                                            <ul class="space-y-1 text-xs text-gray-700">
+                                                @foreach(is_array($cv->extracted_education) ? $cv->extracted_education : json_decode($cv->extracted_education, true) as $education)
+                                                    <li class="bg-white p-2 rounded border border-gray-200">
+                                                        <p class="font-medium">{{ $education['degree'] ?? '' }} {{ $education['field'] ?? '' }}</p>
+                                                        <p>{{ $education['institution'] ?? '' }}</p>
+                                                        <p class="text-gray-500">{{ $education['start_date'] ?? '' }} - {{ $education['end_date'] ?? 'Present' }}</p>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                        @endif
+                                        
+                                        @if($cv->extracted_experience)
+                                        <div>
+                                            <h5 class="text-xs font-medium text-gray-700 mb-2">Experience:</h5>
+                                            <ul class="space-y-1 text-xs text-gray-700">
+                                                @foreach(is_array($cv->extracted_experience) ? $cv->extracted_experience : json_decode($cv->extracted_experience, true) as $experience)
+                                                    <li class="bg-white p-2 rounded border border-gray-200">
+                                                        <p class="font-medium">{{ $experience['title'] ?? '' }}</p>
+                                                        <p>{{ $experience['company'] ?? '' }}</p>
+                                                        <p class="text-gray-500">{{ $experience['start_date'] ?? '' }} - {{ $experience['end_date'] ?? 'Present' }}</p>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-6 bg-gray-50 rounded-lg border border-gray-200">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No CVs uploaded</h3>
+                            <p class="mt-1 text-sm text-gray-500">Upload your first CV to start applying for jobs.</p>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
     </div>

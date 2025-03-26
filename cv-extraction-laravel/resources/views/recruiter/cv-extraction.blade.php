@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
+<div class="mx-[20px] py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
         <h1 class="text-2xl font-bold text-gray-800 mb-6">CV Analysis Tool</h1>
         
@@ -129,7 +129,7 @@
                     </div>
                     
                     <div class="pt-2">
-                        <button type="submit" class="w-full flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition shadow-sm">
+                        <button type="submit" id="extract-cv-btn" class="w-full flex justify-center items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition shadow-sm">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                             </svg>
@@ -137,6 +137,18 @@
                         </button>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="fixed inset-0 bg-white/40 backdrop-blur-sm flex items-center justify-center z-[9999] hidden">
+            <div class="bg-white p-8 rounded-xl shadow-2xl max-w-md w-full border border-blue-400">
+                <div class="flex flex-col items-center">
+                    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mb-4"></div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Processing CV</h3>
+                    <p class="text-gray-600 text-center">Please wait while our AI analyzes the document. This might take up to 30 seconds.</p>
+                    <p class="text-sm text-blue-500 mt-4">Do not refresh the page.</p>
+                </div>
             </div>
         </div>
 
@@ -622,6 +634,82 @@
                 }
             });
         }
+        
+        // Add loading overlay functionality
+        const form = document.querySelector('form');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const extractCvBtn = document.getElementById('extract-cv-btn');
+        
+        if (form && loadingOverlay && extractCvBtn) {
+            console.log('Form elements found, attaching submit handler');
+            
+            form.addEventListener('submit', function(e) {
+                console.log('Form submitted');
+                
+                // Validate that a file is selected
+                const fileInput = document.getElementById('cv_file');
+                if (fileInput && fileInput.files.length > 0) {
+                    console.log('File selected, showing loading overlay');
+                    
+                    // Show loading overlay
+                    loadingOverlay.classList.remove('hidden');
+                    loadingOverlay.style.display = 'flex';
+                    
+                    // Change button text and disable it
+                    extractCvBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...';
+                    extractCvBtn.disabled = true;
+                    
+                    // Force the overlay to display (backup approach)
+                    setTimeout(() => {
+                        if (loadingOverlay.classList.contains('hidden')) {
+                            console.log('Backup: forcing overlay to show');
+                            loadingOverlay.classList.remove('hidden');
+                            loadingOverlay.style.display = 'flex';
+                        }
+                    }, 100);
+                } else {
+                    console.log('No file selected');
+                }
+            });
+            
+            // Alternate approach - listen for click on the submit button
+            extractCvBtn.addEventListener('click', function() {
+                const fileInput = document.getElementById('cv_file');
+                if (fileInput && fileInput.files.length > 0) {
+                    console.log('Button clicked, file present');
+                    setTimeout(() => {
+                        loadingOverlay.classList.remove('hidden');
+                        loadingOverlay.style.display = 'flex';
+                    }, 10);
+                }
+            });
+        } else {
+            console.error('Form elements not found', { form, loadingOverlay, extractCvBtn });
+        }
     });
+</script>
+
+<!-- Add script to hide loading overlay on page load if it's visible -->
+<script>
+    // Hide loading overlay when page is fully loaded
+    window.addEventListener('load', function() {
+        console.log('Page loaded, checking loading overlay');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            console.log('Hiding loading overlay on page load');
+            loadingOverlay.classList.add('hidden');
+            loadingOverlay.style.display = 'none';
+        }
+    });
+    
+    // Backup to ensure overlay is hidden after a timeout
+    setTimeout(() => {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay && !loadingOverlay.classList.contains('hidden')) {
+            console.log('Timeout: forcing overlay to hide');
+            loadingOverlay.classList.add('hidden');
+            loadingOverlay.style.display = 'none';
+        }
+    }, 2000);
 </script>
 @endsection 

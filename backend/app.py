@@ -7,6 +7,7 @@ from werkzeug.utils import secure_filename
 from flask_cors import CORS
 from dotenv import load_dotenv
 from together import Together
+import traceback
 
 # Load environment variables from the correct .env file path
 load_dotenv('../cv-extraction-laravel/.env')
@@ -251,6 +252,17 @@ def index():
     """Serve the frontend."""
     return app.send_static_file('index.html')
 
+@app.route('/api/health-check', methods=['GET'])
+def health_check():
+    """API endpoint to check if the service is up and running."""
+    print("Health check request received")
+    return jsonify({
+        "status": "ok",
+        "message": "Flask API is running",
+        "version": "1.0.0",
+        "api_key_configured": bool(api_key)
+    }), 200
+
 @app.route('/api/extract-cv', methods=['POST'])
 def extract_cv():
     """API endpoint to extract CV data."""
@@ -456,6 +468,181 @@ IMPORTANT NOTE FOR SKILLS ANALYSIS:
                 }
             }
         }), 200  # Return 200 with default values instead of 500
+
+@app.route('/api/check-compatibility-score', methods=['POST'])
+def check_compatibility_score():
+    """API endpoint to quickly assess compatibility score between CV and job description."""
+    print("\n=== Starting Compatibility Check ===")
+    
+    # Check if required data is provided
+    if 'cv_file' not in request.files:
+        print("Error: No CV file provided in request")
+        return jsonify({"error": "No CV file provided"}), 400
+    
+    if 'job_description' not in request.form or not request.form['job_description']:
+        print("Error: No job description provided in request")
+        return jsonify({"error": "No job description provided"}), 400
+    
+    file = request.files['cv_file']
+    job_description = request.form['job_description']
+    
+    # Check if file is empty
+    if file.filename == '':
+        print("Error: No file selected")
+        return jsonify({"error": "No file selected"}), 400
+    
+    # Check if file is allowed
+    if not file or not allowed_file(file.filename):
+        print("Error: Invalid file type")
+        return jsonify({"error": "Invalid file type. Only PDF files are allowed"}), 400
+    
+    try:
+        # Save file to temporary location
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp:
+            file.save(temp.name)
+            temp_path = temp.name
+        
+        # Extract text from PDF
+        print("Attempting to extract text from PDF...")
+        cv_text = extract_text_from_pdf(temp_path)
+        
+        # Remove temporary file
+        os.unlink(temp_path)
+        
+        if not cv_text:
+            print("Error: Failed to extract text from PDF")
+            return jsonify({"error": "Failed to extract text from PDF"}), 500
+        
+        print(f"Successfully extracted {len(cv_text)} characters from PDF")
+        
+        # Create a focused prompt just for compatibility assessment
+        print("Creating AI prompt...")
+        prompt = f"""
+You are an expert HR AI specialized in CV analysis and job matching. Your task is to analyze a CV against a job description and provide compatibility assessment in JSON format.
+
+CV TEXT:
+{cv_text}
+
+JOB DESCRIPTION:
+{job_description}
+
+Analyze how well this candidate matches the job requirements and provide:
+1. A compatibility score from 0-100
+2. A detailed explanation for the score IN FIRST PERSON (as if you are the HR AI speaking directly to the user)
+3. Specific scores for skills match, experience match, and education match
+4. Lists of matched and missing skills
+
+FORMAT YOUR RESPONSE AS A JSON WITH THE FOLLOWING STRUCTURE:
+```json
+{{
+  "compatibility_score": 75,
+  "explanation": "I found that you have most of the required technical skills but lack specific industry experience.",
+  "skills_score": 80,
+  "experience_score": 60,
+  "education_score": 90,
+  "matched_skills": ["JavaScript", "React", "Node.js"],
+  "missing_skills": ["TypeScript", "GraphQL"]
+}}
+```
+
+IMPORTANT GUIDELINES:
+1. Be objective and factual based only on the CV content
+2. For skills analysis, include only specific technical skills, frameworks, and tools
+3. 'matched_skills' should list actual skills found in both the CV and job requirements
+4. 'missing_skills' should list skills mentioned in the job requirements but missing from the CV
+5. Ensure all scores are integers between 0-100
+6. Always include all fields in the response, even if some arrays are empty
+7. WRITE THE EXPLANATION IN FIRST PERSON, addressing the candidate directly (e.g., "I found that you have strong skills in..." not "The candidate has...")
+
+Return ONLY the JSON object, no additional text.
+"""
+        
+        try:
+            print("Sending request to Together AI...")
+            # Using Together chat completions API
+            response = together_client.chat.completions.create(
+                model="meta-llama/Llama-3.3-70B-Instruct-Turbo",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.2,
+                max_tokens=1024
+            )
+            
+            print("Received response from Together AI")
+            generated_text = response.choices[0].message.content.strip()
+            
+            # Extract JSON from the response
+            print("Extracting JSON from response...")
+            json_start = generated_text.find('{')
+            json_end = generated_text.rfind('}') + 1
+            
+            if json_start != -1 and json_end != -1:
+                json_str = generated_text[json_start:json_end]
+                try:
+                    result = json.loads(json_str)
+                    
+                    # Ensure all required fields are present (with defaults if missing)
+                    final_result = {
+                        "compatibility_score": result.get("compatibility_score", 50),
+                        "explanation": result.get("explanation", "No detailed explanation provided."),
+                        "skills_score": result.get("skills_score", 0),
+                        "experience_score": result.get("experience_score", 0),
+                        "education_score": result.get("education_score", 0),
+                        "matched_skills": result.get("matched_skills", []),
+                        "missing_skills": result.get("missing_skills", [])
+                    }
+                    
+                    print(f"Successfully parsed JSON response: {final_result}")
+                    return jsonify(final_result), 200
+                except json.JSONDecodeError as e:
+                    print(f"Error parsing JSON: {e}")
+                    print(f"Raw JSON string: {json_str}")
+                    return jsonify({
+                        "compatibility_score": 50,
+                        "explanation": "Could not accurately assess compatibility due to processing issues.",
+                        "skills_score": 0,
+                        "experience_score": 0,
+                        "education_score": 0,
+                        "matched_skills": [],
+                        "missing_skills": []
+                    }), 200
+            else:
+                print("No JSON structure found in response")
+                return jsonify({
+                    "compatibility_score": 50,
+                    "explanation": "Could not accurately assess compatibility due to processing issues.",
+                    "skills_score": 0,
+                    "experience_score": 0,
+                    "education_score": 0,
+                    "matched_skills": [],
+                    "missing_skills": []
+                }), 200
+                
+        except Exception as e:
+            print(f"Error calling Together AI: {e}")
+            return jsonify({
+                "compatibility_score": 50,
+                "explanation": f"Error in AI processing: {str(e)}. Using default compatibility score.",
+                "skills_score": 0,
+                "experience_score": 0,
+                "education_score": 0,
+                "matched_skills": [],
+                "missing_skills": []
+            }), 200
+    
+    except Exception as e:
+        print(f"Error in check_compatibility_score: {str(e)}")
+        print("Full traceback:", traceback.format_exc())
+        return jsonify({
+            "compatibility_score": 50,
+            "explanation": f"An error occurred during processing: {str(e)}",
+            "skills_score": 0,
+            "experience_score": 0,
+            "education_score": 0,
+            "matched_skills": [],
+            "missing_skills": []
+        }), 200
+
+print("=== Compatibility Check Complete ===\n")
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000) 

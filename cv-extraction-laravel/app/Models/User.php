@@ -24,6 +24,9 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'phone',
+        'location',
+        'bio',
     ];
 
     /**
@@ -75,6 +78,24 @@ class User extends Authenticatable
     public function isJobSeeker(): bool
     {
         return $this->role === 'job_seeker';
+    }
+
+    /**
+     * Get all CVs belonging to the user.
+     */
+    public function cvs()
+    {
+        return $this->hasMany(CV::class);
+    }
+
+    /**
+     * Get the user's default CV.
+     * 
+     * @return \App\Models\CV|null
+     */
+    public function defaultCV()
+    {
+        return $this->cvs()->where('is_default', true)->first();
     }
 
     /**

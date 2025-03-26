@@ -458,4 +458,122 @@ class CVExtractionController extends Controller
         
         return true;
     }
+
+    /**
+     * Extract CV data from a file directly.
+     * This method is useful for internal calls from other controllers.
+     * 
+     * @param \Illuminate\Http\UploadedFile $file
+     * @return array
+     */
+    public function extractFromFile($file)
+    {
+        try {
+            // Fix: Correctly set the API URL to extract-cv
+            $apiUrl = config('services.cv_extraction.api_url', 'http://localhost:5000/api/extract-cv');
+            
+            Log::info('Sending CV to extraction API', [
+                'api_url' => $apiUrl,
+                'file_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize()
+            ]);
+            
+            // Call the CV extraction API with the correct endpoint and method
+            $response = Http::timeout(60)
+                ->withHeaders(['Accept' => 'application/json'])
+                ->attach(
+                    'cv_file', 
+                    file_get_contents($file->path()), 
+                    $file->getClientOriginalName()
+                )
+                ->post($apiUrl);
+            
+            // Check if the API call was successful
+            if (!$response->successful()) {
+                Log::error('CV extraction API error', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                throw new \Exception('API Error (' . $response->status() . '): ' . $response->body());
+            }
+            
+            // Get the API response data
+            $apiData = $response->json();
+            Log::info('CV extraction successful', ['data_keys' => array_keys($apiData)]);
+            
+            // Ensure we have cv_data field in the response
+            if (!isset($apiData['cv_data']) && isset($apiData['data'])) {
+                $apiData['cv_data'] = $apiData['data'];
+            }
+            
+            return $apiData;
+            
+        } catch (\Exception $e) {
+            Log::error('CV extraction failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            throw $e;
+        }
+    }
+
+    /**
+     * Check compatibility score between a CV and job description
+     */
+    public function checkCompatibilityScore(Request $request)
+    {
+        $request->validate([
+            'cv_file' => 'required|mimes:pdf|max:10240', // 10MB max
+            'job_description' => 'required|string|max:50000',
+        ]);
+        
+        try {
+            // Log sending CV to extraction API
+            $apiUrl = config('services.cv_extraction.api_url', 'http://localhost:5000/api/check-compatibility-score');
+            Log::info('Checking compatibility score with API', [
+                'api_url' => $apiUrl,
+                'file_name' => $request->file('cv_file')->getClientOriginalName(),
+                'file_size' => $request->file('cv_file')->getSize()
+            ]);
+            
+            // Send CV to extraction API
+            $response = Http::withHeaders([
+                'Accept' => 'application/json',
+            ])->attach(
+                'cv_file', 
+                file_get_contents($request->file('cv_file')->path()), 
+                $request->file('cv_file')->getClientOriginalName()
+            )->post($apiUrl, [
+                'job_description' => $request->job_description,
+            ]);
+            
+            // Check if request was successful
+            if ($response->successful()) {
+                $data = $response->json();
+                Log::info('Compatibility score check successful', [
+                    'compatibility_score' => $data['compatibility_score'] ?? 'Not available'
+                ]);
+                
+                return response()->json($data);
+            } else {
+                Log::error('Compatibility score check failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
+                
+                return response()->json([
+                    'error' => 'Failed to check compatibility score: ' . $response->body()
+                ], 500);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error checking compatibility score: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Error checking compatibility score: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

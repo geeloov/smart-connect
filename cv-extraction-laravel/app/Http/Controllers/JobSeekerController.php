@@ -4,10 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\JobPosition;
 use App\Models\JobApplication;
+use App\Models\CV;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class JobSeekerController extends Controller
 {
@@ -49,6 +53,10 @@ class JobSeekerController extends Controller
     public function profile()
     {
         $user = Auth::user();
+        
+        // Load the user's CVs
+        $user->load('cvs');
+        
         return view('job-seeker.profile', compact('user'));
     }
 
@@ -67,22 +75,14 @@ class JobSeekerController extends Controller
             'bio' => 'nullable|string|max:1000',
         ]);
         
+        // Update user information
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
+            'phone' => $request->phone,
+            'location' => $request->location,
+            'bio' => $request->bio,
         ]);
-        
-        // Update or create candidate record
-        $candidate = $user->candidate;
-        if (!$candidate) {
-            $candidate = new \App\Models\Candidate();
-            $candidate->user_id = $user->id;
-        }
-        
-        $candidate->phone = $request->phone;
-        $candidate->location = $request->location;
-        $candidate->bio = $request->bio;
-        $candidate->save();
         
         return redirect()->route('job-seeker.profile')
             ->with('success', 'Profile updated successfully!');
@@ -290,5 +290,247 @@ class JobSeekerController extends Controller
             ->paginate(10);
             
         return view('job-seeker.applications', compact('applications'));
+    }
+
+    /**
+     * Upload a new CV and extract data from it.
+     */
+    public function uploadCV(Request $request)
+    {
+        // Validate the request
+        $request->validate([
+            'cv_file' => 'required|mimes:pdf|max:10240', // 10MB max
+            'make_default' => 'nullable|boolean',
+        ]);
+        
+        try {
+            $file = $request->file('cv_file');
+            $fileName = time() . '_' . Auth::id() . '_' . $file->getClientOriginalName();
+            
+            // Store in public disk with proper permissions
+            $filePath = $file->storeAs('cvs', $fileName, 'public');
+            
+            // Ensure the file is publicly accessible
+            chmod(storage_path('app/public/' . $filePath), 0644);
+            
+            // Create a new CV record
+            $cv = new CV([
+                'user_id' => Auth::id(),
+                'is_default' => $request->make_default ? true : false,
+                'file_path' => $filePath,
+                'file_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+            ]);
+            
+            // If this is set as default, unset any other default CVs
+            if ($request->make_default) {
+                CV::where('user_id', Auth::id())
+                  ->where('is_default', true)
+                  ->update(['is_default' => false]);
+            }
+            
+            // Save the CV
+            $cv->save();
+            
+            // Extract CV data
+            try {
+                $extractionController = app()->make('App\Http\Controllers\CVExtractionController');
+                $extractionResult = $extractionController->extractFromFile($file);
+                
+                if (isset($extractionResult['cv_data'])) {
+                    // Update CV with extracted data
+                    $cvData = $extractionResult['cv_data'];
+                    $cv->extracted_data = $cvData;
+                    
+                    // Extract and store specific data points
+                    if (isset($cvData['skills'])) {
+                        $cv->extracted_skills = $cvData['skills'];
+                    }
+                    
+                    if (isset($cvData['education'])) {
+                        $cv->extracted_education = $cvData['education'];
+                    }
+                    
+                    if (isset($cvData['experience'])) {
+                        $cv->extracted_experience = $cvData['experience'];
+                    }
+                    
+                    if (isset($cvData['languages'])) {
+                        $cv->extracted_languages = $cvData['languages'];
+                    }
+                    
+                    if (isset($cvData['certifications'])) {
+                        $cv->extracted_certifications = $cvData['certifications'];
+                    }
+                    
+                    if (isset($cvData['phone'])) {
+                        $cv->extracted_phone = $cvData['phone'];
+                    }
+                    
+                    if (isset($cvData['email'])) {
+                        $cv->extracted_email = $cvData['email'];
+                    }
+                    
+                    if (isset($cvData['location'])) {
+                        $cv->extracted_location = $cvData['location'];
+                    }
+                    
+                    $cv->processed_at = now();
+                    $cv->save();
+                }
+            } catch (\Exception $e) {
+                Log::error('CV data extraction failed: ' . $e->getMessage());
+                // Continue without CV data extraction
+            }
+            
+            return redirect()->route('job-seeker.profile')
+                ->with('success', 'CV uploaded successfully.');
+                
+        } catch (\Exception $e) {
+            Log::error('CV upload failed: ' . $e->getMessage());
+            
+            return redirect()->route('job-seeker.profile')
+                ->with('error', 'Failed to upload CV: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Set a CV as the default.
+     */
+    public function setDefaultCV(CV $cv)
+    {
+        // Ensure the CV belongs to the authenticated user
+        if ($cv->user_id !== Auth::id()) {
+            return redirect()->route('job-seeker.profile')
+                ->with('error', 'You do not have permission to modify this CV.');
+        }
+        
+        // Unset any existing default CVs
+        CV::where('user_id', Auth::id())
+          ->where('is_default', true)
+          ->update(['is_default' => false]);
+        
+        // Set this CV as default
+        $cv->is_default = true;
+        $cv->save();
+        
+        return redirect()->route('job-seeker.profile')
+            ->with('success', 'Default CV updated successfully.');
+    }
+    
+    /**
+     * View a CV.
+     */
+    public function viewCV(CV $cv)
+    {
+        // Ensure the CV belongs to the authenticated user
+        if ($cv->user_id !== Auth::id()) {
+            return redirect()->route('job-seeker.profile')
+                ->with('error', 'You do not have permission to view this CV.');
+        }
+        
+        // Generate a URL to the stored file
+        $url = Storage::url($cv->file_path);
+        
+        return response()->file(storage_path('app/public/' . $cv->file_path));
+    }
+    
+    /**
+     * Delete a CV.
+     */
+    public function deleteCV(CV $cv)
+    {
+        // Ensure the CV belongs to the authenticated user
+        if ($cv->user_id !== Auth::id()) {
+            return redirect()->route('job-seeker.profile')
+                ->with('error', 'You do not have permission to delete this CV.');
+        }
+        
+        // Delete the file from storage
+        Storage::disk('public')->delete($cv->file_path);
+        
+        // Delete the database record
+        $cv->delete();
+        
+        return redirect()->route('job-seeker.profile')
+            ->with('success', 'CV deleted successfully.');
+    }
+
+    /**
+     * Get CV file for compatibility check
+     */
+    public function getCVFile(CV $cv)
+    {
+        // Check if user owns this CV
+        if ($cv->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized access to CV'], 403);
+        }
+
+        // Check if file exists in storage/app/public/cvs directory
+        $filePath = storage_path('app/public/' . $cv->file_path);
+        
+        if (!file_exists($filePath)) {
+            Log::error('CV file not found', [
+                'file_path' => $cv->file_path,
+                'full_path' => $filePath,
+                'cv_id' => $cv->id,
+                'file_name' => $cv->file_name
+            ]);
+            return response()->json(['error' => 'CV file not found'], 404);
+        }
+
+        // Return the file as a download
+        return response()->file($filePath, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
+    /**
+     * Get the default CV for the authenticated user
+     */
+    public function getDefaultCV()
+    {
+        $user = Auth::user();
+        $defaultCV = $user->cvs()->where('is_default', true)->first();
+        
+        if (!$defaultCV) {
+            return null;
+        }
+        
+        return $defaultCV;
+    }
+
+    /**
+     * Get CV file content as base64 for compatibility check
+     */
+    public function getCVContent(CV $cv)
+    {
+        // Check if user owns this CV
+        if ($cv->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized access to CV'], 403);
+        }
+
+        // Check if file exists in storage/app/public/cvs directory
+        $filePath = storage_path('app/public/' . $cv->file_path);
+        
+        if (!file_exists($filePath)) {
+            Log::error('CV file not found', [
+                'file_path' => $cv->file_path,
+                'full_path' => $filePath,
+                'cv_id' => $cv->id,
+                'file_name' => $cv->file_name
+            ]);
+            return response()->json(['error' => 'CV file not found'], 404);
+        }
+
+        // Read the file and encode as base64
+        $fileContent = base64_encode(file_get_contents($filePath));
+        
+        return response()->json([
+            'file_name' => $cv->file_name,
+            'file_content' => $fileContent,
+            'mime_type' => 'application/pdf'
+        ]);
     }
 }

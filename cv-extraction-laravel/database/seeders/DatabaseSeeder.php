@@ -87,5 +87,8 @@ class DatabaseSeeder extends Seeder
                 ]);
             }
         }
+        
+        // Run the JobPositionSeeder to create realistic job positions
+        $this->call(JobPositionSeeder::class);
     }
 }

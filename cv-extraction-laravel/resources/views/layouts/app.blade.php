@@ -275,7 +275,8 @@
             @yield('content')
         </main>
 
-        <!-- Footer -->
+        <!-- Footer - Only visible on homepage -->
+        @if(request()->routeIs('home'))
         <footer class="bg-white mt-12 py-8 border-t border-gray-200">
             <div class="container mx-auto px-4">
                 <div class="flex flex-col md:flex-row justify-between">
@@ -301,6 +302,7 @@
                 </div>
             </div>
         </footer>
+        @endif
     </div>
 
     <!-- Scripts -->

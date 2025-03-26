@@ -92,7 +92,10 @@ class JobApplicationController extends Controller
                 ->with('info', 'You have already applied for this job position.');
         }
         
-        return view('job-seeker.applications.create', compact('jobPosition'));
+        // Get the user's default CV if available
+        $defaultCV = Auth::user()->defaultCV();
+        
+        return view('job-seeker.applications.create', compact('jobPosition', 'defaultCV'));
     }
     
     /**
@@ -100,9 +103,11 @@ class JobApplicationController extends Controller
      */
     public function store(Request $request, JobPosition $jobPosition)
     {
+        // Validate the request with conditional validation
         $request->validate([
-            'cv_file' => 'required|mimes:pdf|max:10240', // 10MB max
+            'cv_file' => $request->has('use_default_cv') ? 'nullable' : 'required|mimes:pdf|max:10240', // 10MB max
             'cover_letter' => 'nullable|string|max:5000',
+            'use_default_cv' => 'nullable|boolean',
         ]);
         
         try {
@@ -115,20 +120,127 @@ class JobApplicationController extends Controller
                 return redirect()->back()->with('error', 'You have already applied for this position.');
             }
             
-            // Get the CV file
-            $file = $request->file('cv_file');
-            $fileName = time() . '_' . Auth::id() . '_' . $file->getClientOriginalName();
+            // Initialize variables
+            $fileName = null;
+            $cvData = null;
+            $matchingData = null;
             
-            // Store the CV file
-            $filePath = $file->storeAs('cv_files', $fileName, 'public');
+            // Get extraction controller to access its methods
+            $extractionController = app()->make('App\Http\Controllers\CVExtractionController');
             
-            // Log file storage information for debugging
-            Log::info('CV file stored successfully', [
-                'path' => $filePath,
-                'user_id' => Auth::id(),
-                'job_id' => $jobPosition->id,
-                'original_name' => $file->getClientOriginalName()
-            ]);
+            if ($request->has('use_default_cv')) {
+                // Use the default CV
+                $defaultCV = Auth::user()->defaultCV();
+                
+                if (!$defaultCV) {
+                    return redirect()->back()->with('error', 'Default CV not found. Please upload a CV.');
+                }
+                
+                // Get the file path from storage
+                $filePath = storage_path('app/public/' . $defaultCV->file_path);
+                $fileName = $defaultCV->file_name;
+                
+                // If there's extracted data, use it
+                if ($defaultCV->extracted_data) {
+                    $cvData = is_string($defaultCV->extracted_data) ? 
+                        json_decode($defaultCV->extracted_data, true) : 
+                        $defaultCV->extracted_data;
+                }
+                
+                // Try to match with job if needed
+                try {
+                    // Create a file object from the stored file
+                    $tempFile = new \Illuminate\Http\UploadedFile(
+                        $filePath,
+                        $fileName,
+                        $defaultCV->mime_type,
+                        null,
+                        true
+                    );
+                    
+                    // Match with job description
+                    $matchingData = $extractionController->matchWithJob($tempFile, $jobPosition->description);
+                } catch (\Exception $e) {
+                    Log::warning('Job matching with default CV failed but continuing with application', [
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            } else if ($request->hasFile('cv_file')) {
+                // Get the CV file
+                $file = $request->file('cv_file');
+                $fileName = time() . '_' . Auth::id() . '_' . $file->getClientOriginalName();
+                
+                // Store the CV file
+                $filePath = $file->storeAs('cv_files', $fileName, 'public');
+                
+                // Log file storage information for debugging
+                Log::info('CV file stored successfully', [
+                    'path' => $filePath,
+                    'user_id' => Auth::id(),
+                    'job_id' => $jobPosition->id,
+                    'original_name' => $file->getClientOriginalName()
+                ]);
+                
+                // Step 1: Try to extract CV data
+                try {
+                    $response = Http::withHeaders([
+                        'Accept' => 'application/json',
+                    ])->attach(
+                        'cv_file', 
+                        file_get_contents($file->path()), 
+                        $file->getClientOriginalName()
+                    )->post(config('services.cv_extraction.api_url', 'http://localhost:5000/api/extract-cv'));
+                    
+                    if ($response->successful()) {
+                        $apiData = $response->json();
+                        $cvData = $apiData['cv_data'] ?? null;
+                        
+                        Log::info('CV data extracted successfully for job application', [
+                            'user_id' => Auth::id(),
+                            'job_id' => $jobPosition->id,
+                            'data_keys' => $cvData ? array_keys($cvData) : 'no data'
+                        ]);
+                    } else {
+                        Log::warning('CV extraction API returned non-successful response', [
+                            'status' => $response->status(),
+                            'body' => $response->body()
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Error calling CV extraction API: ' . $e->getMessage());
+                    // Continue without CV data
+                }
+                
+                // Step 2: Try to match CV with job position
+                if ($cvData) {
+                    try {
+                        Log::info('Attempting job matching for application', [
+                            'job_id' => $jobPosition->id,
+                            'job_title' => $jobPosition->title,
+                            'job_description_length' => strlen($jobPosition->description)
+                        ]);
+                        
+                        // Call the matchWithJob method from the extraction controller
+                        $matchingData = $extractionController->matchWithJob($file, $jobPosition->description);
+                        
+                        // Log the matching results
+                        Log::info('Job matching completed for application', [
+                            'match_score' => $matchingData['match_score'] ?? 'not available',
+                            'matched_skills_count' => isset($matchingData['skills_analysis']['matched_skills']) ? 
+                                count($matchingData['skills_analysis']['matched_skills']) : 0,
+                            'missing_skills_count' => isset($matchingData['skills_analysis']['missing_skills']) ? 
+                                count($matchingData['skills_analysis']['missing_skills']) : 0
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error('Error in job matching process: ' . $e->getMessage(), [
+                            'trace' => $e->getTraceAsString()
+                        ]);
+                        // Continue without matching data
+                    }
+                }
+            } else {
+                return redirect()->back()->with('error', 'Please provide a CV to apply for this position.');
+            }
             
             // Create the job application record
             $jobApplication = new JobApplication();
@@ -139,78 +251,15 @@ class JobApplicationController extends Controller
             $jobApplication->status = 'pending';
             $jobApplication->recruiter_viewed_at = null;
             
-            // Get extraction controller to access its methods
-            $extractionController = app()->make('App\Http\Controllers\CVExtractionController');
-            
-            // Initialize variables
-            $cvData = null;
-            $matchingData = null;
-            
-            // Step 1: Try to extract CV data
-            try {
-                $response = Http::withHeaders([
-                    'Accept' => 'application/json',
-                ])->attach(
-                    'cv_file', 
-                    file_get_contents($file->path()), 
-                    $file->getClientOriginalName()
-                )->post(config('services.cv_extraction.api_url', 'http://localhost:5000/api/extract-cv'));
-                
-                if ($response->successful()) {
-                    $apiData = $response->json();
-                    $cvData = $apiData['cv_data'] ?? null;
-                    
-                    if ($cvData) {
-                        $jobApplication->cv_data = is_string($cvData) ? $cvData : json_encode($cvData);
-                    }
-                    
-                    Log::info('CV data extracted successfully for job application', [
-                        'user_id' => Auth::id(),
-                        'job_id' => $jobPosition->id,
-                        'data_keys' => $cvData ? array_keys($cvData) : 'no data'
-                    ]);
-                } else {
-                    Log::warning('CV extraction API returned non-successful response', [
-                        'status' => $response->status(),
-                        'body' => $response->body()
-                    ]);
-                }
-            } catch (\Exception $e) {
-                Log::error('Error calling CV extraction API: ' . $e->getMessage());
-                // Continue without CV data
+            // Add CV data if available
+            if ($cvData) {
+                $jobApplication->cv_data = is_string($cvData) ? $cvData : json_encode($cvData);
             }
             
-            // Step 2: Try to match CV with job position
-            if ($cvData) {
-                try {
-                    Log::info('Attempting job matching for application', [
-                        'job_id' => $jobPosition->id,
-                        'job_title' => $jobPosition->title,
-                        'job_description_length' => strlen($jobPosition->description)
-                    ]);
-                    
-                    // Call the matchWithJob method from the extraction controller
-                    $matchingData = $extractionController->matchWithJob($file, $jobPosition->description);
-                    
-                    if ($matchingData) {
-                        // Store matching data in the application record
-                        $jobApplication->compatibility_analysis = json_encode($matchingData);
-                        
-                        // Log the matching results
-                        Log::info('Job matching completed for application', [
-                            'match_score' => $matchingData['match_score'] ?? 'not available',
-                            'matched_skills_count' => isset($matchingData['skills_analysis']['matched_skills']) ? 
-                                count($matchingData['skills_analysis']['matched_skills']) : 0,
-                            'missing_skills_count' => isset($matchingData['skills_analysis']['missing_skills']) ? 
-                                count($matchingData['skills_analysis']['missing_skills']) : 0
-                        ]);
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Error in job matching process: ' . $e->getMessage(), [
-                        'trace' => $e->getTraceAsString()
-                    ]);
-                    // Continue without matching data
-                }
+            // Add matching data if available
+            if ($matchingData) {
+                $jobApplication->compatibility_analysis = json_encode($matchingData);
+                $jobApplication->compatibility_score = $matchingData['match_score'] ?? null;
             }
             
             // Save the application with all collected data
@@ -393,13 +442,5 @@ class JobApplicationController extends Controller
         $jobApplication->compatibility_analysis = null;
         
         return view('recruiter.applications.show', compact('jobApplication'));
-    }
-    
-    /**
-     * Add recruiter notes to a job application.
-     */
-    public function addNotes(Request $request, JobApplication $jobApplication)
-    {
-        //
     }
 }

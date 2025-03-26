@@ -28,7 +28,7 @@
         <div class="absolute top-0 left-0 w-[500px] h-[500px] bg-[#B9FF66]/10 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
         <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-[#B9FF66]/10 rounded-full translate-x-1/3 translate-y-1/3 pointer-events-none"></div>
         
-        <div class="container mx-auto px-4 relative">
+        <div class="max-w-7xl mx-auto px-4 relative">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div class="order-2 md:order-1">
                     <div class="mb-6">
@@ -116,7 +116,7 @@
 
     <!-- Features Section -->
     <section id="features" class="py-16 md:py-24">
-        <div class="container mx-auto px-4">
+        <div class="max-w-7xl mx-auto px-4">
             <div class="mb-12">
                 <div class="inline-block px-3 py-2 rounded-[10px] bg-[#B9FF66] mb-2">
                     <h2 class="text-3xl font-medium text-[#191A23]">Features</h2>
@@ -205,7 +205,7 @@
 
     <!-- How It Works Section -->
     <section id="how-it-works" class="py-16 md:py-24 bg-white border-y border-[#191A23]">
-        <div class="container mx-auto px-4">
+        <div class="max-w-7xl mx-auto px-4">
             <div class="mb-12">
                 <div class="inline-block px-3 py-2 rounded-[10px] bg-[#B9FF66] mb-2">
                     <h2 class="text-3xl font-medium text-[#191A23]">How It Works</h2>
@@ -275,7 +275,7 @@
 
     <!-- Use Cases Section -->
     <section id="use-cases" class="py-16 md:py-24">
-        <div class="container mx-auto px-4">
+        <div class="max-w-7xl mx-auto px-4">
             <div class="mb-12">
                 <div class="inline-block px-3 py-2 rounded-[10px] bg-[#B9FF66] mb-2">
                     <h2 class="text-3xl font-medium text-[#191A23]">Use Cases</h2>
@@ -363,7 +363,7 @@
         <div class="absolute bottom-0 left-0 w-[400px] h-[400px] bg-[#B9FF66]/10 rounded-full translate-x-[-30%] translate-y-[30%] pointer-events-none"></div>
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-[#B9FF66]/10 rounded-full translate-x-[30%] translate-y-[-30%] pointer-events-none"></div>
         
-        <div class="container mx-auto px-4 relative z-10">
+        <div class="max-w-7xl mx-auto px-4 relative z-10">
             <div class="max-w-3xl mx-auto">
                 <div class="bg-[#F3F3F3] p-8 md:p-12 rounded-[30px] border-2 border-[#191A23] text-center transform transition-all duration-300 hover:-translate-y-1" style="box-shadow: 0px 8px 0px 0 #191a23;">
                     <div class="inline-block px-5 py-3 rounded-[10px] bg-[#B9FF66] mb-6 transform transition-all duration-300 hover:scale-[1.02] shadow-md" style="box-shadow: 0px 4px 0px 0 #191a23;">
