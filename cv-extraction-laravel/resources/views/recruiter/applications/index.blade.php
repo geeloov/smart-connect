@@ -249,6 +249,138 @@
                 </a>
             </div>
         @endif
+        
+        <!-- ALWAYS SHOW COMPATIBILITY CHECKS SECTION regardless of applications -->
+        <div class="mt-10">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Compatibility Checks (All Job Positions)
+                </h2>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    {{ isset($allCompatibilityChecks) ? $allCompatibilityChecks->count() : 0 }} candidates
+                </span>
+            </div>
+            
+            @if(isset($allCompatibilityChecks) && $allCompatibilityChecks->count() > 0)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Job Seeker
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Position
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Checked On
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Match Score
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Status
+                                    </th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($allCompatibilityChecks as $check)
+                                    @php
+                                        // Check if this user has applied to this position
+                                        $hasApplied = false;
+                                        foreach ($applications as $app) {
+                                            if ($app->user_id == $check->user_id && $app->job_position_id == $check->job_position_id) {
+                                                $hasApplied = true;
+                                                break;
+                                            }
+                                        }
+                                    @endphp
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="flex-shrink-0 h-10 w-10 bg-green-600 text-white rounded-full flex items-center justify-center">
+                                                    {{ strtoupper(substr($check->user->name ?? 'U', 0, 1)) }}
+                                                </div>
+                                                <div class="ml-4">
+                                                    <div class="text-sm font-medium text-gray-900">{{ $check->user->name ?? 'Unknown User' }}</div>
+                                                    <div class="text-sm text-gray-500">{{ $check->user->email ?? 'No email' }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <a href="{{ route('recruiter.job-positions.show', $check->jobPosition) }}" class="text-green-600 hover:text-green-900">
+                                                <div class="text-sm font-medium">{{ $check->jobPosition->title ?? 'Unknown Position' }}</div>
+                                                <div class="text-sm text-gray-500">{{ $check->jobPosition->company_name ?? 'Unknown Company' }}</div>
+                                            </a>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="text-sm text-gray-900">{{ $check->created_at->format('M d, Y') }}</div>
+                                            <div class="text-sm text-gray-500">{{ $check->created_at->diffForHumans() }}</div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div class="flex items-center">
+                                                <div class="relative w-16 h-4 bg-gray-200 rounded-full mr-2 overflow-hidden">
+                                                    <div class="absolute top-0 left-0 h-full rounded-full 
+                                                        @if($check->compatibility_score >= 80) bg-green-500
+                                                        @elseif($check->compatibility_score >= 60) bg-blue-500
+                                                        @elseif($check->compatibility_score >= 40) bg-yellow-500
+                                                        @else bg-red-500
+                                                        @endif
+                                                    " style="width: {{ $check->compatibility_score }}%"></div>
+                                                </div>
+                                                <span class="text-sm font-medium 
+                                                    @if($check->compatibility_score >= 80) text-green-700
+                                                    @elseif($check->compatibility_score >= 60) text-blue-700
+                                                    @elseif($check->compatibility_score >= 40) text-yellow-700
+                                                    @else text-red-700
+                                                    @endif
+                                                ">{{ $check->compatibility_score }}%</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            @if($hasApplied)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Has Applied
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    Checked Only
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <a href="mailto:{{ $check->user->email ?? '' }}" class="inline-flex items-center px-3 py-1.5 border border-green-600 text-xs font-medium rounded-lg text-green-600 bg-white hover:bg-green-600 hover:text-white transition-colors mr-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                </svg>
+                                                Contact
+                                            </a>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @else
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">No Compatibility Checks Yet</h3>
+                    <p class="text-gray-500 max-w-md mx-auto">
+                        When job seekers check their compatibility with your positions, they'll appear here.
+                    </p>
+                </div>
+            @endif
+        </div>
     </div>
 </div>
 @endsection 

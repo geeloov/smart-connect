@@ -25,7 +25,7 @@
                             <div class="p-3 bg-green-500 rounded-xl shadow-md h-16 w-16 flex items-center justify-center">
                                 <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                </svg>
+                        </svg>
                             </div>
                         </div>
                         
@@ -44,148 +44,148 @@
                     <!-- Action Buttons -->
                     <div class="flex items-center gap-3 mt-4 md:mt-0 bg-white py-1 px-2 rounded-lg relative z-20">
                         <a href="{{ route('recruiter.job-positions.edit', $jobPosition) }}" class="inline-flex items-center px-5 py-2.5 border-2 border-gray-400 text-sm font-semibold rounded-lg text-gray-700 bg-white hover:bg-gray-50 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition">
-                            Edit
-                        </a>
+                        Edit
+                    </a>
                     </div>
                 </div>
             </div>
-        </div>
+            </div>
 
-        <!-- Info Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <!-- Info Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <div class="bg-gradient-to-br from-white to-green-50 rounded-xl shadow-sm border border-green-100 p-6 hover:shadow-md transition-all duration-200">
                 <div class="flex flex-col items-center">
                     <div class="p-3 rounded-xl bg-green-600 text-white mb-4 shadow-sm">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                        </svg>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Company</h3>
+                            <p class="mt-1 text-lg font-bold text-gray-900">{{ $jobPosition->company_name }}</p>
+                        </div>
                     </div>
-                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Company</h3>
-                    <p class="mt-1 text-lg font-bold text-gray-900">{{ $jobPosition->company_name }}</p>
-                </div>
-            </div>
 
             <div class="bg-gradient-to-br from-white to-amber-50 rounded-xl shadow-sm border border-amber-100 p-6 hover:shadow-md transition-all duration-200">
                 <div class="flex flex-col items-center">
                     <div class="p-3 rounded-xl bg-amber-500 text-white mb-4 shadow-sm">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Location</h3>
+                            <p class="mt-1 text-lg font-bold text-gray-900">{{ $jobPosition->location }}</p>
+                        </div>
                     </div>
-                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Location</h3>
-                    <p class="mt-1 text-lg font-bold text-gray-900">{{ $jobPosition->location }}</p>
-                </div>
-            </div>
 
             <div class="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-sm border border-blue-100 p-6 hover:shadow-md transition-all duration-200">
                 <div class="flex flex-col items-center">
                     <div class="p-3 rounded-xl bg-blue-600 text-white mb-4 shadow-sm">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Job Type</h3>
-                    @php
-                        $jobTypeColor = '';
-                        $jobTypeBg = '';
-                        $jobType = strtolower($jobPosition->job_type);
-                        
-                        if (strpos($jobType, 'full-time') !== false || strpos($jobType, 'fulltime') !== false) {
-                            $jobTypeColor = 'text-green-700';
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Job Type</h3>
+                            @php
+                                $jobTypeColor = '';
+                                $jobTypeBg = '';
+                                $jobType = strtolower($jobPosition->job_type);
+                                
+                                if (strpos($jobType, 'full-time') !== false || strpos($jobType, 'fulltime') !== false) {
+                                    $jobTypeColor = 'text-green-700';
                             $jobTypeBg = 'bg-green-100 border-green-200';
-                        } elseif (strpos($jobType, 'part-time') !== false || strpos($jobType, 'parttime') !== false) {
-                            $jobTypeColor = 'text-blue-700';
+                                } elseif (strpos($jobType, 'part-time') !== false || strpos($jobType, 'parttime') !== false) {
+                                    $jobTypeColor = 'text-blue-700';
                             $jobTypeBg = 'bg-blue-100 border-blue-200';
-                        } elseif (strpos($jobType, 'contract') !== false) {
-                            $jobTypeColor = 'text-purple-700';
+                                } elseif (strpos($jobType, 'contract') !== false) {
+                                    $jobTypeColor = 'text-purple-700';
                             $jobTypeBg = 'bg-purple-100 border-purple-200';
-                        } elseif (strpos($jobType, 'freelance') !== false) {
-                            $jobTypeColor = 'text-orange-700';
+                                } elseif (strpos($jobType, 'freelance') !== false) {
+                                    $jobTypeColor = 'text-orange-700';
                             $jobTypeBg = 'bg-orange-100 border-orange-200';
-                        } elseif (strpos($jobType, 'intern') !== false) {
-                            $jobTypeColor = 'text-teal-700';
+                                } elseif (strpos($jobType, 'intern') !== false) {
+                                    $jobTypeColor = 'text-teal-700';
                             $jobTypeBg = 'bg-teal-100 border-teal-200';
-                        } elseif (strpos($jobType, 'remote') !== false) {
-                            $jobTypeColor = 'text-indigo-700';
+                                } elseif (strpos($jobType, 'remote') !== false) {
+                                    $jobTypeColor = 'text-indigo-700';
                             $jobTypeBg = 'bg-indigo-100 border-indigo-200';
-                        } else {
-                            $jobTypeColor = 'text-gray-700';
+                                } else {
+                                    $jobTypeColor = 'text-gray-700';
                             $jobTypeBg = 'bg-gray-100 border-gray-200';
-                        }
-                    @endphp
-                    <div class="mt-1">
+                                }
+                            @endphp
+                            <div class="mt-1">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $jobTypeBg }} {{ $jobTypeColor }} border">
-                            {{ $jobPosition->job_type }}
-                        </span>
+                                    {{ $jobPosition->job_type }}
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
             <div class="bg-gradient-to-br from-white to-purple-50 rounded-xl shadow-sm border border-purple-100 p-6 hover:shadow-md transition-all duration-200">
                 <div class="flex flex-col items-center">
                     <div class="p-3 rounded-xl bg-purple-600 text-white mb-4 shadow-sm">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                        </svg>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Applications</h3>
+                            <p class="mt-1 text-lg font-bold text-gray-900">{{ $applications->count() }}</p>
+                        </div>
                     </div>
-                    <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide">Applications</h3>
-                    <p class="mt-1 text-lg font-bold text-gray-900">{{ $applications->count() }}</p>
                 </div>
-            </div>
-        </div>
 
-        <!-- Additional Details -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            @if($jobPosition->salary_range)
+                <!-- Additional Details -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    @if($jobPosition->salary_range)
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="border-b border-gray-200 bg-gradient-to-r from-green-50 to-white px-6 py-4">
-                    <h3 class="text-base font-medium text-gray-900 flex items-center">
+                            <h3 class="text-base font-medium text-gray-900 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Salary Range
-                    </h3>
-                </div>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Salary Range
+                            </h3>
+                        </div>
                 <div class="px-6 py-4">
-                    <p class="text-lg font-medium text-gray-900">{{ $jobPosition->salary_range }}</p>
-                </div>
-            </div>
-            @endif
+                            <p class="text-lg font-medium text-gray-900">{{ $jobPosition->salary_range }}</p>
+                        </div>
+                    </div>
+                    @endif
 
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div class="border-b border-gray-200 bg-gradient-to-r from-green-50 to-white px-6 py-4">
-                    <h3 class="text-base font-medium text-gray-900 flex items-center">
+                            <h3 class="text-base font-medium text-gray-900 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        Posted
-                    </h3>
-                </div>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                Posted
+                            </h3>
+                        </div>
                 <div class="px-6 py-4">
-                    <p class="text-lg font-medium text-gray-900">{{ $jobPosition->created_at->format('F d, Y') }}</p>
-                    <p class="text-sm text-gray-500">({{ $jobPosition->created_at->diffForHumans() }})</p>
+                            <p class="text-lg font-medium text-gray-900">{{ $jobPosition->created_at->format('F d, Y') }}</p>
+                            <p class="text-sm text-gray-500">({{ $jobPosition->created_at->diffForHumans() }})</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Description Section -->
+                <!-- Description Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
             <div class="border-b border-gray-200 bg-gradient-to-r from-green-50 to-white px-6 py-4">
-                <h3 class="text-base font-medium text-gray-900 flex items-center">
+                        <h3 class="text-base font-medium text-gray-900 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Job Description
-                </h3>
-            </div>
-            <div class="px-6 py-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Job Description
+                        </h3>
+                    </div>
+                    <div class="px-6 py-4">
                 <div class="p-4 rounded-lg prose max-w-none">
                     <div id="job-description-short" class="whitespace-pre-line">
                         {{ Str::limit(strip_tags($jobPosition->description), 300) }}
                     </div>
                     <div id="job-description-full" class="whitespace-pre-line hidden">
-                        {!! nl2br(e($jobPosition->description)) !!}
+                            {!! nl2br(e($jobPosition->description)) !!}
                     </div>
                     <button 
                         id="toggle-description" 
@@ -201,27 +201,27 @@
                         </svg>
                     </button>
                 </div>
-            </div>
-        </div>
+                    </div>
+                </div>
 
-        <!-- Requirements Section -->
-        @if($jobPosition->requirements)
+                <!-- Requirements Section -->
+                @if($jobPosition->requirements)
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
             <div class="border-b border-gray-200 bg-gradient-to-r from-green-50 to-white px-6 py-4">
-                <h3 class="text-base font-medium text-gray-900 flex items-center">
+                        <h3 class="text-base font-medium text-gray-900 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-                    </svg>
-                    Requirements
-                </h3>
-            </div>
-            <div class="px-6 py-4">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                            </svg>
+                            Requirements
+                        </h3>
+                    </div>
+                    <div class="px-6 py-4">
                 <div class="p-4 rounded-lg prose max-w-none">
                     <div id="requirements-short" class="whitespace-pre-line">
                         {{ Str::limit(strip_tags($jobPosition->requirements), 200) }}
                     </div>
                     <div id="requirements-full" class="whitespace-pre-line hidden">
-                        {!! nl2br(e($jobPosition->requirements)) !!}
+                            {!! nl2br(e($jobPosition->requirements)) !!}
                     </div>
                     <button 
                         id="toggle-requirements" 
@@ -234,13 +234,13 @@
                         </svg>
                         <svg id="toggle-req-icon-up" class="w-4 h-4 ml-2 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                        </svg>
-                    </button>
+                            </svg>
+                        </button>
                 </div>
             </div>
         </div>
         @endif
-
+        
         <!-- Applications Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
             <div class="border-b border-gray-200 bg-gradient-to-r from-green-50 to-white px-6 py-4 flex justify-between items-center">
@@ -285,7 +285,7 @@
                                             {{ ucfirst($application->status) }}
                                         </span>
                                     </div>
-                                </div>
+                                    </div>
                                 <div class="mt-3 flex justify-end">
                                     <a href="{{ route('recruiter.applications.show', $application) }}" class="inline-flex items-center px-3 py-1 border border-green-600 text-xs font-medium rounded-lg text-green-600 bg-white hover:bg-green-600 hover:text-white transition-colors">
                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -296,7 +296,7 @@
                                     </a>
                                 </div>
                             </div>
-                        @endforeach
+                            @endforeach
                     </div>
                     @if($applications->count() > 4)
                         <div class="mt-4 text-center">
@@ -313,7 +313,7 @@
                         <div class="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mb-4">
                             <svg class="h-8 w-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
+                        </svg>
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 mb-1">No Applications Yet</h3>
                         <p class="text-gray-500 max-w-md">No job seekers have applied to this position yet. Check back later or consider promoting this job posting.</p>
