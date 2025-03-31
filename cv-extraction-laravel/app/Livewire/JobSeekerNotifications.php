@@ -37,7 +37,15 @@ class JobSeekerNotifications extends Component
             ->take(5)
             ->get()
             ->map(function ($application) {
-                $statusText = ucfirst(str_replace('_', ' ', $application->status));
+                $statusLabels = [
+                    'pending' => 'Pending',
+                    'in_review' => 'In Review',
+                    'reviewed' => 'Reviewed',
+                    'accepted' => 'Accepted',
+                    'rejected' => 'Rejected',
+                    'hired' => 'Hired'
+                ];
+                $statusText = $statusLabels[$application->status] ?? ucfirst(str_replace('_', ' ', $application->status));
                 
                 return [
                     'id' => $application->id,
@@ -69,7 +77,15 @@ class JobSeekerNotifications extends Component
                 $this->loadNotifications();
                 
                 // Emit browser notification event
-                $statusText = ucfirst(str_replace('_', ' ', $application->status));
+                $statusLabels = [
+                    'pending' => 'Pending',
+                    'in_review' => 'In Review',
+                    'reviewed' => 'Reviewed',
+                    'accepted' => 'Accepted',
+                    'rejected' => 'Rejected',
+                    'hired' => 'Hired'
+                ];
+                $statusText = $statusLabels[$application->status] ?? ucfirst(str_replace('_', ' ', $application->status));
                 $this->dispatch('showNotification', [
                     'title' => 'Application Update',
                     'body' => "Your application for {$application->jobPosition->title} is now {$statusText}"

@@ -73,7 +73,7 @@
                         <div class="flex items-baseline space-x-1">
                             <h3 class="text-2xl font-bold text-gray-900">{{ $pendingApplications }}</h3>
                             <span class="text-sm text-amber-600 font-medium">in review</span>
-                        </div>
+                        </div>  
                     </div>
                 </div>
             </div>
@@ -230,15 +230,26 @@
                                 @php
                                     $statusColors = [
                                         'pending' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                                        'in_review' => 'bg-blue-100 text-blue-800 border-blue-200',
                                         'reviewed' => 'bg-blue-100 text-blue-800 border-blue-200',
                                         'shortlisted' => 'bg-green-100 text-green-800 border-green-200',
                                         'rejected' => 'bg-red-100 text-red-800 border-red-200',
                                         'hired' => 'bg-purple-100 text-purple-800 border-purple-200',
                                     ];
                                     $statusColor = $statusColors[$application->status] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+                                    
+                                    $statusLabels = [
+                                        'pending' => 'Pending',
+                                        'in_review' => 'In Review',
+                                        'reviewed' => 'Reviewed',
+                                        'shortlisted' => 'Shortlisted',
+                                        'rejected' => 'Rejected',
+                                        'hired' => 'Hired'
+                                    ];
+                                    $statusLabel = $statusLabels[$application->status] ?? ucfirst($application->status);
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $statusColor }} border">
-                                    {{ ucfirst($application->status) }}
+                                    {{ $statusLabel }}
                                 </span>
                             </div>
                         </div>

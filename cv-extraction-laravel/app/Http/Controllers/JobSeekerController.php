@@ -35,7 +35,7 @@ class JobSeekerController extends Controller
             
         // Get counts for dashboard stats
         $totalApplications = Auth::user()->jobApplications()->count();
-        $pendingApplications = Auth::user()->jobApplications()->where('status', 'pending')->count();
+        $pendingApplications = Auth::user()->jobApplications()->where('status', 'in_review')->count();
         $shortlistedApplications = Auth::user()->jobApplications()->whereIn('status', ['shortlisted', 'hired'])->count();
         
         return view('job-seeker.dashboard', compact(

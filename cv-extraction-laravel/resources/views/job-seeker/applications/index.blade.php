@@ -154,14 +154,30 @@
                                         {{ $application->created_at->format('M d, Y') }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-medium rounded-full
-                                            @if($application->status == 'pending') bg-yellow-100 text-yellow-800 border border-yellow-200
-                                            @elseif($application->status == 'in_review') bg-blue-100 text-blue-800 border border-blue-200
-                                            @elseif($application->status == 'accepted') bg-green-100 text-green-800 border border-green-200
-                                            @elseif($application->status == 'rejected') bg-red-100 text-red-800 border border-red-200
-                                            @else bg-gray-100 text-gray-800 border border-gray-200
-                                            @endif">
-                                            {{ ucfirst(str_replace('_', ' ', $application->status)) }}
+                                        @php
+                                            $statusColors = [
+                                                'pending' => 'bg-yellow-100 text-yellow-800 border border-yellow-200',
+                                                'in_review' => 'bg-blue-100 text-blue-800 border border-blue-200',
+                                                'reviewed' => 'bg-blue-100 text-blue-800 border border-blue-200',
+                                                'accepted' => 'bg-green-100 text-green-800 border border-green-200',
+                                                'rejected' => 'bg-red-100 text-red-800 border border-red-200',
+                                                'hired' => 'bg-purple-100 text-purple-800 border border-purple-200',
+                                            ];
+                                            
+                                            $statusLabels = [
+                                                'pending' => 'Pending',
+                                                'in_review' => 'In Review',
+                                                'reviewed' => 'Reviewed',
+                                                'accepted' => 'Accepted',
+                                                'rejected' => 'Rejected',
+                                                'hired' => 'Hired'
+                                            ];
+                                            
+                                            $statusColor = $statusColors[$application->status] ?? 'bg-gray-100 text-gray-800 border border-gray-200';
+                                            $statusLabel = $statusLabels[$application->status] ?? ucfirst($application->status);
+                                        @endphp
+                                        <span class="px-3 py-1 inline-flex text-sm leading-5 font-medium rounded-full {{ $statusColor }}">
+                                            {{ $statusLabel }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
