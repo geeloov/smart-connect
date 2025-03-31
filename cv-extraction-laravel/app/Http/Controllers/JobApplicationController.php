@@ -522,7 +522,27 @@ class JobApplicationController extends Controller
                             'body' => $response->body()
                         ]);
                         
-                        // Continue with API response processing...
+                        // FIXED: Properly extract and store the CV data from the API response
+                        if ($response->successful()) {
+                            try {
+                                $extractedData = $response->json();
+                                if (isset($extractedData['cv_data'])) {
+                                    $cvData = $extractedData['cv_data'];
+                                    Log::info('Successfully extracted CV data from API response', [
+                                        'data_keys' => array_keys($cvData),
+                                        'data_size' => strlen(json_encode($cvData))
+                                    ]);
+                                } else {
+                                    Log::warning('API response does not contain cv_data key', [
+                                        'response_keys' => array_keys($extractedData)
+                                    ]);
+                                    $cvData = $extractedData; // Use the whole response
+                                }
+                            } catch (\Exception $e) {
+                                Log::error('Error parsing API response: ' . $e->getMessage());
+                                $cvData = json_decode($response->body(), true);
+                            }
+                        }
                         
                         // Label for skipping the API call if we already have extracted data
                         skip_cv_extraction_api_call:
@@ -584,13 +604,16 @@ class JobApplicationController extends Controller
                                 'file_path' => $filePath
                             ]);
                             
-                            $matchingData = $extractionController->matchWithJob(new \Illuminate\Http\UploadedFile(
+                            // FIXED: Create UploadedFile from file path
+                            $cvFile = new \Illuminate\Http\UploadedFile(
                                 $filePath,
                                 $fileName,
                                 mime_content_type($filePath),
                                 null,
                                 true
-                            ), $jobPosition->description);
+                            );
+                            
+                            $matchingData = $extractionController->matchWithJob($cvFile, $jobPosition->description);
                         } catch (\Exception $e) {
                             Log::warning('Job matching with default CV failed but continuing with application', [
                                 'error' => $e->getMessage(),
@@ -608,72 +631,6 @@ class JobApplicationController extends Controller
                             ->with('error', 'Error extracting data from your default CV: ' . $e->getMessage())
                             ->withInput();
                     }
-                }
-                
-                // Now that we have CV data, try to match with the job
-                try {
-                    // First, make sure the $cvData we have is explicitly stored as a JSON string
-                    // This ensures we're working with consistent data formats
-                    if (is_array($cvData)) {
-                        $cvData = json_encode($cvData);
-                        Log::info('Converted $cvData array to JSON string', [
-                            'json_length' => strlen($cvData),
-                            'is_json' => $this->isJson($cvData)
-                        ]);
-                    } else if (is_string($cvData) && !$this->isJson($cvData)) {
-                        $cvData = json_encode(['value' => $cvData]);
-                        Log::info('Wrapped $cvData non-JSON string in JSON object', [
-                            'json_length' => strlen($cvData),
-                            'is_json' => $this->isJson($cvData)
-                        ]);
-                    }
-                    
-                    // Find file path to match with job position
-                    $possiblePaths = [
-                        storage_path('app/public/cv_files/' . $fileName),
-                        storage_path('app/public/cvs/' . $fileName),
-                        public_path('storage/cvs/' . $fileName),
-                        public_path('storage/cv_files/' . $fileName),
-                        base_path('public/storage/cvs/' . $fileName),
-                        base_path('cv-extraction-laravel/public/storage/cvs/' . $fileName)
-                    ];
-                    
-                    $filePath = null;
-                    foreach ($possiblePaths as $path) {
-                        if (file_exists($path)) {
-                            $filePath = $path;
-                            Log::info('Found CV file at: ' . $filePath);
-                            break;
-                        }
-                    }
-                    
-                    if (!$filePath) {
-                        Log::error('CV file not found on disk. Tried paths:', [
-                            'cv_id' => $defaultCV->id,
-                            'tried_paths' => $possiblePaths
-                        ]);
-                        return redirect()->back()->with('error', 'CV file not found. Please upload a new CV.');
-                    }
-                    
-                    Log::info('CV file found, preparing to send to extraction API', [
-                        'file_path' => $filePath,
-                        'file_size' => filesize($filePath)
-                    ]);
-                    
-                    // Match with job description
-                    Log::info('Matching CV with job position', [
-                        'cv_id' => $defaultCV->id,
-                        'job_id' => $jobPosition->id,
-                        'file_path' => $filePath
-                    ]);
-                    
-                    $matchingData = $extractionController->matchWithJob($file, $jobPosition->description);
-                } catch (\Exception $e) {
-                    Log::warning('Job matching with default CV failed but continuing with application', [
-                        'error' => $e->getMessage(),
-                        'cv_id' => $defaultCV->id,
-                        'job_id' => $jobPosition->id
-                    ]);
                 }
             } else if ($request->hasFile('cv_file')) {
                 // Get the CV file
@@ -821,37 +778,40 @@ class JobApplicationController extends Controller
                             'response_top_level' => json_encode(array_keys($apiData))
                         ]);
                         
-                        // If the API returns cv_data directly at the top level, use that
+                        // IMPROVED: Ensure we properly capture and store CV data from the API response
                         if (isset($apiData['cv_data'])) {
                             $cvData = $apiData['cv_data'];
-                            // Store only the cv_data object as JSON string
-                            $apiResponse = json_encode($cvData);
+                            // Store the full API response for reference
+                            $apiResponse = json_encode($apiData);
                             
                             Log::info('Using cv_data from top level', [
                                 'cv_data_keys' => is_array($cvData) ? json_encode(array_keys($cvData)) : 'not an array',
                                 'cv_data_type' => gettype($cvData),
-                                'stored_format' => 'Extracted cv_data object only'
+                                'stored_format' => 'Complete API response',
+                                'data_sample' => json_encode(array_slice($cvData, 0, 3)) // Log a sample of the data
                             ]);
                         } elseif (isset($apiData['data'])) {
                             $cvData = $apiData['data'];
-                            // Store only the data object as JSON string
-                            $apiResponse = json_encode($cvData);
+                            // Store the full API response for reference
+                            $apiResponse = json_encode($apiData);
                             
                             Log::info('Using data key', [
                                 'data_keys' => is_array($cvData) ? json_encode(array_keys($cvData)) : 'not an array',
                                 'data_type' => gettype($cvData),
-                                'stored_format' => 'Extracted data object only'
+                                'stored_format' => 'Complete API response',
+                                'data_sample' => json_encode(array_slice($cvData, 0, 3)) // Log a sample of the data
                             ]);
                         } elseif (is_array($apiData) && !empty($apiData)) {
                             // If the API returns the data directly without nesting
                             $cvData = $apiData;
                             // Store the entire array as JSON string
-                            $apiResponse = json_encode($cvData);
+                            $apiResponse = json_encode($apiData);
                             
                             Log::info('Using full API response as CV data', [
                                 'api_data_keys' => json_encode(array_keys($apiData)),
                                 'api_data_type' => gettype($apiData),
-                                'stored_format' => 'Full API response converted to JSON string'
+                                'stored_format' => 'Complete API response',
+                                'data_sample' => json_encode(array_slice($apiData, 0, 3)) // Log a sample of the data
                             ]);
                         } else {
                             Log::warning('No CV data structure recognized in API response', [
@@ -936,7 +896,7 @@ class JobApplicationController extends Controller
                 return redirect()->back()->with('error', 'Please provide a CV to apply for this position.');
             }
             
-            // Create a new job application
+            // FIXED: Store the CV data properly as JSON string
             Log::info('Creating new job application record', [
                 'user_id' => Auth::id(),
                 'job_position_id' => $jobPosition->id,
@@ -944,217 +904,118 @@ class JobApplicationController extends Controller
                 'has_cover_letter' => !empty($request->cover_letter),
                 'has_cv_data' => !empty($cvData),
                 'has_api_response' => !empty($apiResponse),
-                'has_matching_data' => !empty($matchingData)
+                'has_matching_data' => !empty($matchingData) 
             ]);
             
-            $jobApplication = new JobApplication();
-            $jobApplication->user_id = Auth::id();
-            $jobApplication->job_position_id = $jobPosition->id;
-            $jobApplication->cv_filename = $fileName;
-            $jobApplication->cover_letter = $request->cover_letter;
-            $jobApplication->status = 'pending';
-            $jobApplication->recruiter_viewed_at = null;
-            
-            // First, store the raw API response directly
-            if ($apiResponse) {
-                Log::info('Setting cv_data with API response');
-                
+            // FIXED: Check if cvData is empty but apiResponse has data - use the full API response
+            if (empty($cvData) && !empty($apiResponse) && $this->isJson($apiResponse)) {
                 try {
-                    // We've already processed and encoded the data correctly in the previous steps,
-                    // so we should now have a valid JSON string
-                    if (!is_string($apiResponse)) {
-                        Log::warning('API response is not a string (unexpected), converting now', [
-                            'type' => gettype($apiResponse)
+                    $apiResponseData = json_decode($apiResponse, true);
+                    
+                    if (isset($apiResponseData['cv_data'])) {
+                        $cvData = $apiResponseData['cv_data'];
+                        Log::info('Retrieved cv_data from apiResponse', [
+                            'cv_data_keys' => array_keys($cvData),
+                            'cv_data_length' => strlen(json_encode($cvData))
                         ]);
-                        $apiResponse = json_encode($apiResponse);
+                    } else {
+                        $cvData = $apiResponseData;
+                        Log::info('Using full apiResponse as cvData', [
+                            'data_keys' => array_keys($apiResponseData),
+                            'data_length' => strlen($apiResponse)
+                        ]);
                     }
-                    
-                    // Set directly - already properly formatted as JSON string
-                    $jobApplication->cv_data = $apiResponse;
-                    
-                    Log::info('Successfully stored API response as cv_data', [
-                        'data_type' => gettype($jobApplication->cv_data),
-                        'is_json' => $this->isJson($jobApplication->cv_data),
-                        'length' => strlen($jobApplication->cv_data)
-                    ]);
                 } catch (\Exception $e) {
-                    Log::error('Error processing API response: ' . $e->getMessage(), [
-                        'exception' => $e->getMessage()
-                    ]);
-                    // Fallback to a safe value
-                    $jobApplication->cv_data = json_encode(['error' => 'Error processing API response: ' . $e->getMessage()]);
+                    Log::warning('Error extracting data from apiResponse: ' . $e->getMessage());
                 }
             }
             
-            // If we have properly processed CV data, use that instead
-            elseif ($cvData) {
-                Log::info('Setting cv_data with processed CV data', [
-                    'cv_data_type' => gettype($cvData),
-                    'cv_data_keys' => is_array($cvData) ? implode(', ', array_keys($cvData)) : 'not an array'
+            // Create a new job application object with our data
+            $jobApplication = new JobApplication([
+                'user_id' => Auth::id(),
+                'job_position_id' => $jobPosition->id,
+                'cv_filename' => $fileName,
+                'cover_letter' => $request->cover_letter,
+                'status' => 'pending',
+            ]);
+            
+            // Improved CV data handling logic
+            if (is_array($cvData) && !empty($cvData)) {
+                // If cvData is already an array, encode it properly
+                $jobApplication->cv_data = json_encode($cvData);
+                Log::info('Stored cv_data from array', [
+                    'data_keys' => array_keys($cvData),
+                    'encoded_length' => strlen(json_encode($cvData)),
+                    'sample' => substr(json_encode($cvData), 0, 200) . '...' // Add sample for verification
                 ]);
-                
-                try {
-                    // Special handling for potentially problematic data structures
-                    if (is_array($cvData)) {
-                        // Deep sanitization to remove invalid UTF-8 sequences and other problematic chars
-                        $sanitized = $this->sanitizeForJson($cvData);
-                        $encodedData = json_encode($sanitized, JSON_PARTIAL_OUTPUT_ON_ERROR | JSON_UNESCAPED_UNICODE);
-                        
-                        if ($encodedData === false) {
-                            Log::error('JSON encoding failed even after sanitization: ' . json_last_error_msg());
-                            
-                            // Attempt more aggressive sanitization
-                            $encodedData = $this->encodeJsonSafely($cvData);
-                            if ($encodedData === false) {
-                                // Last resort - create a simplified version
-                                $simplified = [
-                                    'name' => $cvData['name'] ?? 'Unknown',
-                                    'error' => 'Could not fully encode CV data: ' . json_last_error_msg(),
-                                    'partial_data' => true
-                                ];
-                                // Create a new job application object with our data
-                                $jobApplication = new JobApplication([
-                                    'user_id' => Auth::id(),
-                                    'job_position_id' => $jobPosition->id,
-                                    'cv_filename' => $fileName,
-                                    'cover_letter' => $request->cover_letter,
-                                    'status' => 'pending',
-                                ]);
-                                // Set cv_data through the mutator to ensure correct handling
-                                $jobApplication->cv_data = json_encode($simplified);
-                            } else {
-                                // Create a new job application object with our data
-                                $jobApplication = new JobApplication([
-                                    'user_id' => Auth::id(),
-                                    'job_position_id' => $jobPosition->id,
-                                    'cv_filename' => $fileName,
-                                    'cover_letter' => $request->cover_letter,
-                                    'status' => 'pending',
-                                ]);
-                                // Set cv_data through the mutator to ensure correct handling
-                                $jobApplication->cv_data = $encodedData;
-                            }
-                        } else {
-                            // Create a new job application object with our data
-                            $jobApplication = new JobApplication([
-                                'user_id' => Auth::id(),
-                                'job_position_id' => $jobPosition->id,
-                                'cv_filename' => $fileName,
-                                'cover_letter' => $request->cover_letter,
-                                'status' => 'pending',
-                            ]);
-                            // Set cv_data through the mutator to ensure correct handling
-                            $jobApplication->cv_data = $encodedData;
-                        }
-                    } else if (is_string($cvData)) {
-                        // For string values, still verify they're proper JSON or encode them
-                        // Create a new job application object with our data
-                        $jobApplication = new JobApplication([
-                            'user_id' => Auth::id(),
-                            'job_position_id' => $jobPosition->id,
-                            'cv_filename' => $fileName,
-                            'cover_letter' => $request->cover_letter,
-                            'status' => 'pending',
-                        ]);
-                        // Set cv_data through the mutator to ensure correct handling
-                        if ($this->isJson($cvData)) {
-                            $jobApplication->cv_data = $cvData;
-                        } else {
-                            // For non-JSON strings, wrap them
-                            $jobApplication->cv_data = json_encode(['cv_text' => $cvData]);
-                        }
-                    } else if (is_object($cvData)) {
-                        // Convert objects to arrays first
-                        $asArray = $this->objectToArray($cvData);
-                        // Create a new job application object with our data
-                        $jobApplication = new JobApplication([
-                            'user_id' => Auth::id(),
-                            'job_position_id' => $jobPosition->id,
-                            'cv_filename' => $fileName,
-                            'cover_letter' => $request->cover_letter,
-                            'status' => 'pending',
-                        ]);
-                        // Set cv_data through the mutator to ensure correct handling
-                        $jobApplication->cv_data = json_encode($asArray);
-                    } else {
-                        // For other types, create a simple wrapper
-                        // Create a new job application object with our data
-                        $jobApplication = new JobApplication([
-                            'user_id' => Auth::id(),
-                            'job_position_id' => $jobPosition->id,
-                            'cv_filename' => $fileName,
-                            'cover_letter' => $request->cover_letter,
-                            'status' => 'pending',
-                        ]);
-                        // Set cv_data through the mutator to ensure correct handling
-                        $jobApplication->cv_data = json_encode(['value' => (string)$cvData]);
-                    }
-                    
-                    // Final verification
-                    if (empty($jobApplication->cv_data) || !is_string($jobApplication->cv_data)) {
-                        // Instead of throwing an exception, fix the data type
-                        Log::warning('cv_data is not a string, converting it now', [
-                            'current_type' => gettype($jobApplication->cv_data)
-                        ]);
-                        
-                        // Force it to be a STRING - not an array - in the actual attribute directly
-                        // This bypasses any mutators/accessors that might convert it back to an array
-                        if (is_array($jobApplication->cv_data)) {
-                            $jobApplication->attributes['cv_data'] = json_encode($jobApplication->cv_data);
-                        } else {
-                            $jobApplication->attributes['cv_data'] = json_encode(['data' => $jobApplication->cv_data]);
-                        }
-                        
-                        // Verify it's actually a string now
-                        if (!is_string($jobApplication->attributes['cv_data'])) {
-                            Log::error('CRITICAL ERROR: cv_data is STILL not a string after forced conversion', [
-                                'new_type' => gettype($jobApplication->attributes['cv_data'])
-                            ]);
-                            $jobApplication->attributes['cv_data'] = '{"error":"Could not convert CV data to string"}';
-                        }
-                        
-                        Log::info('Converted cv_data to string successfully', [
-                            'new_type' => gettype($jobApplication->attributes['cv_data']),
-                            'is_json' => $this->isJson($jobApplication->attributes['cv_data'])
-                        ]);
-                    }
-                    
-                    // Ensure we only log string length for strings
-                    $cvDataLength = is_string($jobApplication->cv_data) 
-                        ? strlen($jobApplication->cv_data) 
-                        : (is_string($jobApplication->attributes['cv_data']) 
-                            ? strlen($jobApplication->attributes['cv_data']) 
-                            : 'not a string');
-                    
-                    $cvDataSample = is_string($jobApplication->cv_data)
-                        ? substr($jobApplication->cv_data, 0, 100) . '...'
-                        : (is_string($jobApplication->attributes['cv_data'])
-                            ? substr($jobApplication->attributes['cv_data'], 0, 100) . '...'
-                            : json_encode(['type' => gettype($jobApplication->cv_data)]));
-                    
-                    Log::info('Successfully stored CV data', [
-                        'data_type' => gettype($jobApplication->cv_data),
-                        'data_type_in_attributes' => gettype($jobApplication->attributes['cv_data'] ?? null),
-                        'is_json' => is_string($jobApplication->cv_data) ? $this->isJson($jobApplication->cv_data) : false,
-                        'length' => $cvDataLength,
-                        'sample' => $cvDataSample
+            } else if (is_string($cvData) && !empty($cvData)) {
+                // If cvData is a string, check if it's already JSON
+                if ($this->isJson($cvData)) {
+                    $jobApplication->cv_data = $cvData; // Already JSON string
+                    Log::info('Stored cv_data from JSON string', [
+                        'json_length' => strlen($cvData),
+                        'sample' => substr($cvData, 0, 200) . '...' // Add sample for verification
                     ]);
-                } catch (\Exception $e) {
-                    Log::error('Error encoding CV data: ' . $e->getMessage(), [
-                        'trace' => $e->getTraceAsString(),
-                        'data_type' => gettype($cvData)
-                    ]);
-                    
-                    // Create a very minimal CV data structure that will encode safely
-                    $jobApplication->cv_data = json_encode([
-                        'error' => 'Failed to encode CV data: ' . $e->getMessage(),
-                        'timestamp' => time()
+                } else {
+                    // For non-JSON strings, wrap them
+                    $jobApplication->cv_data = json_encode(['cv_text' => $cvData]);
+                    Log::info('Stored wrapped cv_data', [
+                        'original_type' => 'non-JSON string',
+                        'wrapped_length' => strlen(json_encode(['cv_text' => $cvData])),
+                        'sample' => substr(json_encode(['cv_text' => $cvData]), 0, 200) . '...' // Add sample for verification
                     ]);
                 }
+            } else if (is_object($cvData)) {
+                // Convert objects to arrays first
+                $asArray = $this->objectToArray($cvData);
+                $jobApplication->cv_data = json_encode($asArray);
+                Log::info('Stored cv_data from object', [
+                    'object_class' => get_class($cvData),
+                    'encoded_length' => strlen(json_encode($asArray)),
+                    'sample' => substr(json_encode($asArray), 0, 200) . '...' // Add sample for verification
+                ]);
+            } else if (!empty($apiResponse)) {
+                // If cvData is empty but we have API response, use that
+                $jobApplication->cv_data = $apiResponse;
+                Log::info('Stored cv_data from apiResponse', [
+                    'original_type' => gettype($apiResponse),
+                    'encoded_length' => strlen($apiResponse),
+                    'sample' => substr($apiResponse, 0, 200) . '...' // Add sample for verification
+                ]);
             } else {
-                // No cv_data available
-                $jobApplication->cv_data = null;
-                Log::warning('No CV data available for job application');
+                // For other types or empty data, create a simple wrapper
+                $jobApplication->cv_data = json_encode(['value' => (string)$cvData ?: 'No CV data extracted']);
+                Log::info('Stored cv_data from other type', [
+                    'original_type' => gettype($cvData),
+                    'encoded_length' => strlen(json_encode(['value' => (string)$cvData ?: 'No CV data extracted'])),
+                    'is_empty' => empty($cvData)
+                ]);
+            }
+            
+            // Extra verification to ensure cv_data is always stored as a valid JSON string
+            if (!is_string($jobApplication->cv_data) || !$this->isJson($jobApplication->cv_data)) {
+                Log::warning('cv_data is not a valid JSON string, fixing now', [
+                    'current_type' => gettype($jobApplication->cv_data),
+                    'is_json' => is_string($jobApplication->cv_data) ? $this->isJson($jobApplication->cv_data) : false
+                ]);
+                
+                // Force conversion to a JSON string with error information
+                if (is_array($jobApplication->cv_data)) {
+                    $jobApplication->attributes['cv_data'] = json_encode($jobApplication->cv_data);
+                } else if (is_string($jobApplication->cv_data) && !$this->isJson($jobApplication->cv_data)) {
+                    $jobApplication->attributes['cv_data'] = json_encode(['raw_text' => $jobApplication->cv_data]);
+                } else {
+                    $jobApplication->attributes['cv_data'] = json_encode([
+                        'error' => 'Invalid data format',
+                        'original_type' => gettype($jobApplication->cv_data),
+                        'timestamp' => now()->toDateTimeString()
+                    ]);
+                }
+                
+                Log::info('Fixed cv_data format', [
+                    'new_type' => gettype($jobApplication->attributes['cv_data']),
+                    'is_json' => $this->isJson($jobApplication->attributes['cv_data'])
+                ]);
             }
             
             // Add matching data if available
@@ -1216,8 +1077,9 @@ class JobApplicationController extends Controller
             
             // Analyze CV and job compatibility if CV data is available
             if (!empty($jobApplication->cv_data)) {
-                // This will calculate and update compatibility score
-                $this->analyzeCompatibility($jobApplication, $jobPosition);
+                // FIXED: Remove call to undefined method analyzeCompatibility
+                // Simply continue with the stored compatibility data that was already added
+                Log::info('CV data exists, skipping compatibility analysis as it was already performed');
             }
             
             // Dispatch event for new application submission
