@@ -210,17 +210,32 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
-                        Recent Applications
+                        Candidate Activity
                     </h2>
-                    <a href="{{ route('recruiter.applications.index') }}" class="inline-flex items-center text-sm font-medium text-green-600 hover:text-green-800 transition-colors">
-                        View All
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                    </a>
+                    <div class="flex space-x-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {{ $totalApplications }} Applications
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            {{ $totalCompatibilityChecks }} CV Checks
+                        </span>
+                    </div>
                 </div>
                 
-                <div class="divide-y divide-gray-100">
+                <!-- Tabs Navigation -->
+                <div class="border-b border-gray-200">
+                    <nav class="flex -mb-px" aria-label="Tabs">
+                        <button id="tab-applications" class="tab-button w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm border-green-500 text-green-600" aria-current="page">
+                            Applications
+                        </button>
+                        <button id="tab-compatibility" class="tab-button w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">
+                            Compatibility Checks
+                        </button>
+                    </nav>
+                </div>
+                
+                <!-- Applications Tab Content -->
+                <div id="tab-content-applications" class="tab-content divide-y divide-gray-100">
                     @forelse($recentApplications as $application)
                     <div class="p-6 hover:bg-gray-50 transition-colors">
                         <div class="flex justify-between items-start">
@@ -251,7 +266,7 @@
                                 </svg>
                                 Applied {{ $application->created_at->diffForHumans() }}
                             </span>
-                            <a href="{{ route('recruiter.applications.show', $application) }}" class="inline-flex items-center px-3 py-1.5 border border-green-600 text-xs font-medium rounded-lg text-green-600 bg-white hover:bg-green-600 hover:text-white transition-colors">
+                            <a href="{{ route('recruiter.applications.show', $application->id) }}" class="inline-flex items-center px-3 py-1.5 border border-green-600 text-xs font-medium rounded-lg text-green-600 bg-white hover:bg-green-600 hover:text-white transition-colors">
                                 View Application
                             </a>
                         </div>
@@ -270,7 +285,127 @@
                     </div>
                     @endforelse
                 </div>
+                
+                <!-- Compatibility Checks Tab Content -->
+                <div id="tab-content-compatibility" class="tab-content divide-y divide-gray-100 hidden">
+                    @forelse($compatibilityChecks as $check)
+                    <div class="p-6 hover:bg-gray-50 transition-colors">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-medium text-gray-900">{{ $check->user->name }}</h3>
+                                <p class="text-sm text-gray-600 mt-1">Checked compatibility for: {{ $check->jobPosition->title }}</p>
+                            </div>
+                            <div>
+                                @php
+                                    $score = $check->compatibility_score;
+                                    $scoreClass = 'bg-gray-100 text-gray-800 border-gray-200';
+                                    if ($score >= 80) {
+                                        $scoreClass = 'bg-green-100 text-green-800 border-green-200';
+                                    } elseif ($score >= 60) {
+                                        $scoreClass = 'bg-blue-100 text-blue-800 border-blue-200';
+                                    } elseif ($score >= 40) {
+                                        $scoreClass = 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                                    } else {
+                                        $scoreClass = 'bg-red-100 text-red-800 border-red-200';
+                                    }
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $scoreClass }} border">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    {{ $score }}% Match
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Skills Summary -->
+                        <div class="mt-2">
+                            @if(!empty($check->matched_skills))
+                            <div class="mt-2 flex flex-wrap gap-1">
+                                @php
+                                    $matchedSkills = is_array($check->matched_skills) ? $check->matched_skills : json_decode($check->matched_skills, true);
+                                    $matchedSkills = is_array($matchedSkills) ? array_slice($matchedSkills, 0, 3) : [];
+                                @endphp
+                                
+                                @foreach($matchedSkills as $skill)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700">
+                                    {{ $skill }}
+                                </span>
+                                @endforeach
+                                
+                                @if(is_array($matchedSkills) && count($matchedSkills) > 3)
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-700">
+                                    +{{ count($matchedSkills) - 3 }} more
+                                </span>
+                                @endif
+                            </div>
+                            @endif
+                        </div>
+                        
+                        <div class="mt-3 flex justify-between items-center">
+                            <span class="text-xs text-gray-500 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Checked {{ $check->created_at->diffForHumans() }}
+                            </span>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="p-8 text-center">
+                        <div class="inline-block p-4 rounded-full bg-purple-50 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <p class="text-gray-500 mb-2">No compatibility checks yet.</p>
+                        <p class="text-gray-500 text-sm mb-4">Job seekers haven't checked compatibility with your job postings.</p>
+                    </div>
+                    @endforelse
+                </div>
+                
+                <div class="border-t border-gray-100 px-6 py-3 bg-gray-50 text-right">
+                    <a href="{{ route('recruiter.applications.index') }}" class="inline-flex items-center text-sm font-medium text-green-600 hover:text-green-800 transition-colors">
+                        View All Activity
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </a>
+                </div>
             </div>
+            
+            <!-- Tab switching script -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const tabButtons = document.querySelectorAll('.tab-button');
+                    const tabContents = document.querySelectorAll('.tab-content');
+                    
+                    tabButtons.forEach(button => {
+                        button.addEventListener('click', function() {
+                            // Get the target tab content id
+                            const tabId = this.id.replace('tab-', 'tab-content-');
+                            
+                            // Deactivate all tabs
+                            tabButtons.forEach(btn => {
+                                btn.classList.remove('border-green-500', 'text-green-600');
+                                btn.classList.add('border-transparent', 'text-gray-500');
+                            });
+                            
+                            // Hide all tab contents
+                            tabContents.forEach(content => {
+                                content.classList.add('hidden');
+                            });
+                            
+                            // Activate current tab
+                            this.classList.remove('border-transparent', 'text-gray-500');
+                            this.classList.add('border-green-500', 'text-green-600');
+                            
+                            // Show current tab content
+                            document.getElementById(tabId).classList.remove('hidden');
+                        });
+                    });
+                });
+            </script>
         </div>
     </div>
 </div>

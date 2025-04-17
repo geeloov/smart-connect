@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white pb-20">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div class="relative mb-12">
             <div class="absolute inset-0 bg-indigo-600 opacity-10 rounded-2xl"></div>
@@ -303,7 +303,7 @@
 </script>
 
 <!-- Sticky Apply Button -->
-<div class="fixed bottom-0 left-0 right-0 z-10 p-4 bg-white bg-opacity-95 border-t border-gray-200 shadow-lg transform transition-transform duration-300" id="sticky-apply-button">
+<div class="fixed bottom-0 left-0 right-0 z-20 p-4 bg-white border-t border-gray-200 shadow-lg transform transition-all duration-300 opacity-0" id="sticky-apply-button">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         <div class="flex-1 mr-4 hidden md:block">
             <h3 class="text-lg font-semibold text-gray-900 truncate">{{ $jobPosition->title }}</h3>
@@ -329,16 +329,22 @@
         if (stickyButton && headerButton) {
             // Hide sticky button initially when at the top
             stickyButton.classList.add('translate-y-full');
+            stickyButton.classList.add('opacity-0');
             
             window.addEventListener('scroll', function() {
                 // Get position of the header button
                 const headerButtonRect = headerButton.getBoundingClientRect();
+                const scrollY = window.scrollY || window.pageYOffset;
                 
                 // If header button is out of view (scrolled past), show sticky button
                 if (headerButtonRect.top < 0) {
                     stickyButton.classList.remove('translate-y-full');
+                    stickyButton.classList.remove('opacity-0');
+                    stickyButton.classList.add('opacity-100');
                 } else {
                     stickyButton.classList.add('translate-y-full');
+                    stickyButton.classList.remove('opacity-100');
+                    stickyButton.classList.add('opacity-0');
                 }
             });
         }

@@ -23,10 +23,25 @@ class RecruiterController extends Controller
             ->take(5)
             ->get();
             
-        // Get recent applications
+        // Get job position IDs for this recruiter
         $jobPositionIds = Auth::user()->jobPositions()->pluck('id');
+        
+        // Get recent applications
         $recentApplications = JobApplication::whereIn('job_position_id', $jobPositionIds)
             ->with(['jobSeeker', 'jobPosition'])
+            ->latest()
+            ->take(5)
+            ->get();
+            
+        // Get recent compatibility checks (from job seekers who haven't applied yet)
+        $compatibilityChecks = \App\Models\CVJobCompatibility::whereIn('job_position_id', $jobPositionIds)
+            ->whereNotExists(function ($query) {
+                $query->select(\DB::raw(1))
+                    ->from('job_applications')
+                    ->whereRaw('job_applications.user_id = cv_job_compatibility.user_id')
+                    ->whereRaw('job_applications.job_position_id = cv_job_compatibility.job_position_id');
+            })
+            ->with(['user', 'jobPosition', 'cv'])
             ->latest()
             ->take(5)
             ->get();
@@ -35,13 +50,16 @@ class RecruiterController extends Controller
         $totalJobPositions = Auth::user()->jobPositions()->count();
         $activeJobPositions = Auth::user()->jobPositions()->where('is_active', true)->count();
         $totalApplications = JobApplication::whereIn('job_position_id', $jobPositionIds)->count();
+        $totalCompatibilityChecks = \App\Models\CVJobCompatibility::whereIn('job_position_id', $jobPositionIds)->count();
         
         return view('recruiter.dashboard', compact(
             'recentJobPositions',
             'recentApplications',
+            'compatibilityChecks',
             'totalJobPositions',
             'activeJobPositions',
-            'totalApplications'
+            'totalApplications',
+            'totalCompatibilityChecks'
         ));
     }
 
