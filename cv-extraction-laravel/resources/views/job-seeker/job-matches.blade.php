@@ -1,6 +1,6 @@
-@extends('layouts.app')
+@extends('job-seeker.layouts.job-seeker')
 
-@section('content')
+@section('job-seeker-content')
 <div class="container mx-auto px-4 py-8">
     <div class="mb-6 flex items-center justify-between">
         <h1 class="text-2xl font-bold text-dark">Job Matches</h1>

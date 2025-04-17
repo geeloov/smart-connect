@@ -1,116 +1,111 @@
-@extends('layouts.app')
+@extends('recruiter.layouts.recruiter')
 
-@section('content')
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+@section('recruiter-content')
+<div class="min-h-screen bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <!-- Header Section -->
-        <div class="relative mb-8">
-            <div class="absolute inset-0 bg-green-600 opacity-10 rounded-2xl"></div>
-            <div class="relative z-10 p-6 sm:p-8 md:p-10 lg:p-12 bg-white rounded-2xl shadow-xl border border-green-100 overflow-hidden">
-                <!-- Header Background Pattern -->
-                <div class="absolute top-0 right-0 -mt-12 -mr-12 hidden lg:block z-0">
-                    <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-green-50">
-                        <circle cx="150" cy="150" r="150" fill="currentColor"/>
-                        <circle cx="150" cy="150" r="120" fill="white"/>
-                        <circle cx="150" cy="150" r="100" fill="currentColor"/>
-                        <circle cx="150" cy="150" r="80" fill="white"/>
-                        <circle cx="150" cy="150" r="60" fill="currentColor"/>
+        <div class="mb-8">
+            <div class="flex items-start gap-4">
+                <div class="bg-[#B9FF66] p-4 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                 </div>
-                
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-                    <div class="flex items-start gap-4">
-                        <!-- Icon -->
-                        <div class="hidden sm:block flex-shrink-0">
-                            <div class="p-3 bg-green-500 rounded-xl shadow-md h-16 w-16 flex items-center justify-center">
-                                <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <div class="flex flex-wrap items-center gap-2 mb-1">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                    Applications Management
-                                </span>
-                            </div>
-                            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Job Applications</h1>
-                            <p class="mt-2 text-lg text-gray-600">Manage and track all applications for your job positions</p>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center mt-4 md:mt-0 bg-white py-1 px-2 rounded-lg relative z-20">
-                        <a href="{{ route('recruiter.job-positions.create') }}" class="inline-flex items-center px-5 py-2.5 border-2 border-green-600 text-sm font-semibold rounded-lg text-white bg-green-600 hover:bg-green-700 shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition">
-                            Post New Job
-                        </a>
-                    </div>
+                <div class="flex-1">
+                    <p class="text-sm text-gray-500">Applications</p>
+                    <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Applications</h1>
+                    <p class="mt-1 text-gray-500">View and manage candidate applications</p>
                 </div>
             </div>
         </div>
 
+        <!-- Success Message -->
         @if(session('success'))
-            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded-xl shadow-sm" role="alert">
-                <div class="flex items-center">
-                    <svg class="h-5 w-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            <div class="mb-8 bg-green-50 border-l-4 border-green-400 p-4 sm:p-5 rounded-lg flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <p>{{ session('success') }}</p>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">{{ session('success') }}</p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <div class="-mx-1.5 -my-1.5">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="inline-flex text-green-500 focus:outline-none focus:text-green-700">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         @endif
         
         <!-- Filter Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
-            <div class="border-b border-gray-200 bg-gradient-to-r from-green-50 to-white px-6 py-4">
-                <h3 class="text-base font-medium text-gray-900 flex items-center">
+        <div class="bg-white rounded-lg border border-gray-200 overflow-hidden mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-medium text-gray-900 flex items-center">
                     <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
                     </svg>
                     Filter Applications
-                </h3>
+                </h2>
             </div>
-            <div class="px-6 py-4">
+            <div class="px-6 py-5">
                 <form action="{{ route('recruiter.applications.index') }}" method="GET">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div>
-                            <label for="job_position" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="search" class="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                <svg class="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                Search
+                            </label>
+                            <input type="text" name="search" id="search" placeholder="Applicant name..." value="{{ request('search') }}" 
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50">
+                        </div>
+                        <div>
+                            <label for="job_position" class="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                <svg class="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                </svg>
                                 Job Position
                             </label>
-                            <select name="job_position" id="job_position" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm">
+                            <select name="job_position" id="job_position" 
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md">
                                 <option value="">All Positions</option>
-                                @foreach($jobPositions as $position)
-                                    <option value="{{ $position->id }}" {{ request('job_position') == $position->id ? 'selected' : '' }}>
-                                        {{ $position->title }}
+                                @foreach($jobPositions as $jobPosition)
+                                    <option value="{{ $jobPosition->id }}" {{ request('job_position') == $jobPosition->id ? 'selected' : '' }}>
+                                        {{ $jobPosition->title }}
                                     </option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+                            <label for="status" class="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+                                <svg class="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
                                 Status
                             </label>
-                            <select name="status" id="status" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm">
+                            <select name="status" id="status" 
+                                class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm rounded-md">
                                 <option value="">All Statuses</option>
                                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="reviewed" {{ request('status') == 'reviewed' ? 'selected' : '' }}>Reviewed</option>
+                                <option value="reviewing" {{ request('status') == 'reviewing' ? 'selected' : '' }}>Reviewing</option>
                                 <option value="shortlisted" {{ request('status') == 'shortlisted' ? 'selected' : '' }}>Shortlisted</option>
-                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                <option value="interviewed" {{ request('status') == 'interviewed' ? 'selected' : '' }}>Interviewed</option>
+                                <option value="offered" {{ request('status') == 'offered' ? 'selected' : '' }}>Offered</option>
                                 <option value="hired" {{ request('status') == 'hired' ? 'selected' : '' }}>Hired</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="sort" class="block text-sm font-medium text-gray-700 mb-1">
-                                Sort By
-                            </label>
-                            <select name="sort" id="sort" class="mt-1 block w-full rounded-lg border-gray-300 focus:border-green-500 focus:ring-green-500 text-sm">
-                                <option value="latest" {{ request('sort') == 'latest' ? 'selected' : '' }}>Latest First</option>
-                                <option value="oldest" {{ request('sort') == 'oldest' ? 'selected' : '' }}>Oldest First</option>
-                                <option value="highest_score" {{ request('sort') == 'highest_score' ? 'selected' : '' }}>Highest Score</option>
+                                <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
                             </select>
                         </div>
                         <div class="flex items-end">
-                            <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 border-2 border-green-600 shadow-md text-sm font-semibold rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition">
+                            <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                                </svg>
                                 Apply Filters
                             </button>
                         </div>
@@ -119,268 +114,141 @@
             </div>
         </div>
         
-        <!-- Applications List -->
-        @if(count($applications) > 0)
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Applicant
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Position
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Applied
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Match
-                                </th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($applications as $application)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10 bg-green-600 text-white rounded-full flex items-center justify-center">
-                                                {{ strtoupper(substr($application->jobSeeker->name, 0, 1)) }}
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $application->jobSeeker->name }}</div>
-                                                <div class="text-sm text-gray-500">{{ $application->jobSeeker->email }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <a href="{{ route('recruiter.job-positions.show', $application->jobPosition) }}" class="text-green-600 hover:text-green-900">
-                                            <div class="text-sm font-medium">{{ $application->jobPosition->title }}</div>
-                                            <div class="text-sm text-gray-500">{{ $application->jobPosition->company_name }}</div>
-                                        </a>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $application->created_at->format('M d, Y') }}</div>
-                                        <div class="text-sm text-gray-500">{{ $application->created_at->diffForHumans() }}</div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @php
-                                            $statusColors = [
-                                                'pending' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
-                                                'reviewed' => 'bg-blue-100 text-blue-800 border-blue-200',
-                                                'shortlisted' => 'bg-green-100 text-green-800 border-green-200',
-                                                'rejected' => 'bg-red-100 text-red-800 border-red-200',
-                                                'hired' => 'bg-purple-100 text-purple-800 border-purple-200',
-                                            ];
-                                            $statusColor = $statusColors[$application->status] ?? 'bg-gray-100 text-gray-800 border-gray-200';
-                                        @endphp
-                                        <span class="inline-block {{ $statusColor }} px-2.5 py-1 rounded-full text-xs border font-medium">
-                                            {{ ucfirst(str_replace('_', ' ', $application->status)) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @php
-                                            // Extract match score from compatibility_analysis
-                                            $matchScore = null;
-                                            if ($application->compatibility_analysis) {
-                                                $compData = json_decode($application->compatibility_analysis, true);
-                                                $matchScore = $compData['match_score'] ?? null;
-                                            }
-                                        @endphp
-                                        
-                                        @if($matchScore !== null)
-                                            <div class="flex items-center">
-                                                <div class="relative w-16 h-4 bg-gray-200 rounded-full mr-2 overflow-hidden">
-                                                    <div class="absolute top-0 left-0 h-full rounded-full 
-                                                        @if($matchScore >= 80) bg-green-500
-                                                        @elseif($matchScore >= 60) bg-blue-500
-                                                        @elseif($matchScore >= 40) bg-yellow-500
-                                                        @else bg-red-500
-                                                        @endif
-                                                    " style="width: {{ $matchScore }}%"></div>
-                                                </div>
-                                                <span class="text-sm font-medium 
-                                                    @if($matchScore >= 80) text-green-700
-                                                    @elseif($matchScore >= 60) text-blue-700
-                                                    @elseif($matchScore >= 40) text-yellow-700
-                                                    @else text-red-700
-                                                    @endif
-                                                ">{{ $matchScore }}%</span>
-                                            </div>
-                                        @else
-                                            <span class="text-sm text-gray-500">
-                                                Not analyzed
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        <a href="{{ route('recruiter.applications.show', $application) }}" class="inline-flex items-center px-3 py-1.5 border border-green-600 text-xs font-medium rounded-lg text-green-600 bg-white hover:bg-green-600 hover:text-white transition-colors">
-                                            View Application
-                                        </a>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            
-            <div class="mt-6 flex justify-center">
-                {{ $applications->appends(request()->query())->links() }}
-            </div>
-        @else
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-12 flex flex-col items-center justify-center text-center">
-                <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
-                    <svg class="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        @if($applications->isEmpty())
+            <!-- Empty State -->
+            <div class="bg-white rounded-lg border border-gray-200 p-12 flex flex-col items-center justify-center text-center">
+                <div class="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center mb-6">
+                    <svg class="h-10 w-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                 </div>
-                <h3 class="text-xl font-medium text-gray-900 mb-2">No Applications Found</h3>
-                <p class="text-gray-500 mb-6 max-w-md">Try changing your filters or check back later for new applications to your job positions.</p>
-                <a href="{{ route('recruiter.job-positions.index') }}" class="inline-flex items-center px-4 py-2 border-2 border-green-600 shadow-md text-sm font-semibold rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition">
-                    Manage Job Positions
+                <h3 class="text-xl font-bold text-gray-900 mb-2">No Applications Found</h3>
+                <p class="text-gray-500 mb-6 max-w-md">No applications have been submitted for your job positions yet, or they do not match your filter criteria.</p>
+                <a href="{{ route('recruiter.job-positions.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Back to Job Positions
                 </a>
             </div>
-        @endif
-        
-        <!-- ALWAYS SHOW COMPATIBILITY CHECKS SECTION regardless of applications -->
-        <div class="mt-10">
-            <div class="flex items-center justify-between mb-4">
-                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Compatibility Checks (All Job Positions)
-                </h2>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    {{ isset($allCompatibilityChecks) ? $allCompatibilityChecks->count() : 0 }} candidates
-                </span>
-            </div>
-            
-            @if(isset($allCompatibilityChecks) && $allCompatibilityChecks->count() > 0)
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Job Seeker
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Position
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Checked On
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Match Score
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status
-                                    </th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @foreach($allCompatibilityChecks as $check)
-                                    @php
-                                        // Check if this user has applied to this position
-                                        $hasApplied = false;
-                                        foreach ($applications as $app) {
-                                            if ($app->user_id == $check->user_id && $app->job_position_id == $check->job_position_id) {
-                                                $hasApplied = true;
-                                                break;
-                                            }
-                                        }
-                                    @endphp
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-10 w-10 bg-green-600 text-white rounded-full flex items-center justify-center">
-                                                    {{ strtoupper(substr($check->user->name ?? 'U', 0, 1)) }}
-                                                </div>
-                                                <div class="ml-4">
-                                                    <div class="text-sm font-medium text-gray-900">{{ $check->user->name ?? 'Unknown User' }}</div>
-                                                    <div class="text-sm text-gray-500">{{ $check->user->email ?? 'No email' }}</div>
+        @else
+            <!-- Applications Table -->
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                <div class="min-w-full divide-y divide-gray-200">
+                    <div class="bg-gray-50">
+                        <div class="grid grid-cols-12 divide-x divide-gray-200">
+                            <div class="px-6 py-3 col-span-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicant</div>
+                            <div class="px-6 py-3 col-span-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</div>
+                            <div class="px-6 py-3 col-span-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</div>
+                            <div class="px-6 py-3 col-span-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</div>
+                            <div class="px-6 py-3 col-span-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Match Score</div>
+                            <div class="px-6 py-3 col-span-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</div>
+                        </div>
+                    </div>
+                    <div class="bg-white divide-y divide-gray-200">
+                            @foreach($applications as $application)
+                            <div class="grid grid-cols-12 divide-x divide-gray-200 hover:bg-gray-50">
+                                <div class="px-6 py-4 col-span-3 flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <img class="h-10 w-10 rounded-full bg-gray-200 object-cover" src="{{ $application->user->profile_photo_url }}" alt="{{ $application->user->name }}">
+                                            </div>
+                                            <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ $application->user->name }}</div>
+                                        <div class="text-sm text-gray-500 truncate">{{ $application->user->email }}</div>
+                                    </div>
+                                </div>
+                                <div class="px-6 py-4 col-span-2 flex flex-col justify-center">
+                                    <div class="text-sm font-medium text-gray-900 truncate">{{ $application->jobPosition->title }}</div>
+                                    <div class="text-xs text-gray-500 mt-1">{{ $application->jobPosition->job_type }}</div>
+                                </div>
+                                <div class="px-6 py-4 col-span-1 flex flex-col justify-center">
+                                    <div class="text-sm text-gray-500">{{ $application->created_at->format('M d, Y') }}</div>
+                                </div>
+                                <div class="px-6 py-4 col-span-2 flex flex-col justify-center">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        @if($application->status == 'pending') bg-yellow-100 text-yellow-800
+                                        @elseif($application->status == 'reviewing') bg-blue-100 text-blue-800
+                                        @elseif($application->status == 'shortlisted') bg-indigo-100 text-indigo-800
+                                        @elseif($application->status == 'interviewed') bg-purple-100 text-purple-800
+                                        @elseif($application->status == 'offered') bg-pink-100 text-pink-800
+                                        @elseif($application->status == 'hired') bg-green-100 text-green-800
+                                        @elseif($application->status == 'rejected') bg-red-100 text-red-800
+                                        @endif">
+                                        {{ ucfirst($application->status) }}
+                                    </span>
+                                </div>
+                                <div class="px-6 py-4 col-span-2 flex flex-col justify-center">
+                                    <div class="flex items-center">
+                                        <div class="relative w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                            <div class="absolute top-0 left-0 h-full bg-green-500 rounded-full" style="width: {{ $application->match_score }}%;"></div>
+                                        </div>
+                                        <span class="ml-2 text-sm text-gray-700 font-medium">{{ $application->match_score }}%</span>
+                                    </div>
+                                </div>
+                                <div class="px-6 py-4 col-span-2 text-right flex justify-end items-center">
+                                    <a href="{{ route('recruiter.applications.show', $application) }}" class="text-green-600 hover:text-green-800 mr-3">
+                                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </a>
+                                    <div class="relative" x-data="{ open: false }">
+                                        <button @click="open = !open" class="text-gray-500 hover:text-gray-700">
+                                            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                                            </svg>
+                                        </button>
+                                        <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-10" style="display: none;">
+                                            <div class="py-1">
+                                                <a href="{{ route('recruiter.applications.show', $application) }}" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                    <svg class="mr-3 h-5 w-5 text-green-500 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
+                                                    View Details
+                                                </a>
+                                                <form action="{{ route('recruiter.applications.update-status', $application) }}" method="POST" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="status" value="shortlisted">
+                                                    <button type="submit" class="group flex items-center w-full text-left">
+                                                        <svg class="mr-3 h-5 w-5 text-green-500 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        </svg>
+                                                        Shortlist
+                                                    </button>
+                                                </form>
+                                                <form action="{{ route('recruiter.applications.update-status', $application) }}" method="POST" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <input type="hidden" name="status" value="rejected">
+                                                    <button type="submit" class="group flex items-center w-full text-left">
+                                                        <svg class="mr-3 h-5 w-5 text-red-500 group-hover:text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        </svg>
+                                                        Reject
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                                 </div>
                                             </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <a href="{{ route('recruiter.job-positions.show', $check->jobPosition) }}" class="text-green-600 hover:text-green-900">
-                                                <div class="text-sm font-medium">{{ $check->jobPosition->title ?? 'Unknown Position' }}</div>
-                                                <div class="text-sm text-gray-500">{{ $check->jobPosition->company_name ?? 'Unknown Company' }}</div>
-                                            </a>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">{{ $check->created_at->format('M d, Y') }}</div>
-                                            <div class="text-sm text-gray-500">{{ $check->created_at->diffForHumans() }}</div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="relative w-16 h-4 bg-gray-200 rounded-full mr-2 overflow-hidden">
-                                                    <div class="absolute top-0 left-0 h-full rounded-full 
-                                                        @if($check->compatibility_score >= 80) bg-green-500
-                                                        @elseif($check->compatibility_score >= 60) bg-blue-500
-                                                        @elseif($check->compatibility_score >= 40) bg-yellow-500
-                                                        @else bg-red-500
-                                                        @endif
-                                                    " style="width: {{ $check->compatibility_score }}%"></div>
-                                                </div>
-                                                <span class="text-sm font-medium 
-                                                    @if($check->compatibility_score >= 80) text-green-700
-                                                    @elseif($check->compatibility_score >= 60) text-blue-700
-                                                    @elseif($check->compatibility_score >= 40) text-yellow-700
-                                                    @else text-red-700
-                                                    @endif
-                                                ">{{ $check->compatibility_score }}%</span>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($hasApplied)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    Has Applied
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                    Checked Only
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <a href="mailto:{{ $check->user->email ?? '' }}" class="inline-flex items-center px-3 py-1.5 border border-green-600 text-xs font-medium rounded-lg text-green-600 bg-white hover:bg-green-600 hover:text-white transition-colors mr-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                                </svg>
-                                                Contact
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                            @endforeach
                     </div>
                 </div>
-            @else
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-gray-400 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">No Compatibility Checks Yet</h3>
-                    <p class="text-gray-500 max-w-md mx-auto">
-                        When job seekers check their compatibility with your positions, they'll appear here.
-                    </p>
-                </div>
-            @endif
-        </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="mt-8 flex justify-center">
+                {{ $applications->appends(request()->query())->links() }}
+            </div>
+        @endif
     </div>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
+@endpush
+
 @endsection 

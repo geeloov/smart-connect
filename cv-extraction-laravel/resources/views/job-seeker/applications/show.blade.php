@@ -1,6 +1,6 @@
-@extends('layouts.app')
+@extends('job-seeker.layouts.job-seeker')
 
-@section('content')
+@section('job-seeker-content')
 <div class="py-10 bg-gradient-to-b from-gray-50 to-white">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {{-- Header Section --}}
