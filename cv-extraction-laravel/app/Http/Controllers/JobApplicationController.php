@@ -12,9 +12,12 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Models\CV;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class JobApplicationController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Display a listing of available job positions for job seekers.
      */
@@ -1377,17 +1380,78 @@ class JobApplicationController extends Controller
      */
     public function recruiterShowApplication(JobApplication $jobApplication)
     {
-        // Make sure the recruiter can only view applications for their job positions
-        $jobPosition = $jobApplication->jobPosition;
-        
-        if ($jobPosition->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized action.');
+        $this->authorize('view', $jobApplication); // Ensure recruiter owns the job position
+
+        $jobApplication->load('user', 'jobPosition.recruiter');
+
+        // Mark as viewed if not already
+        if (!$jobApplication->recruiter_viewed_at) {
+            $jobApplication->markAsViewedByRecruiter();
         }
-        
-        // Remove any compatibility analysis data to hide skills matching
-        $jobApplication->compatibility_analysis = null;
-        
-        return view('recruiter.applications.show', compact('jobApplication'));
+
+        // Decode cv_data and compatibility_analysis if they are JSON strings
+        $cvData = !empty($jobApplication->cv_data) ? json_decode($jobApplication->cv_data, true) : null;
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            Log::warning('Failed to decode cv_data for application', ['id' => $jobApplication->id, 'error' => json_last_error_msg()]);
+            $cvData = ['error' => 'Could not parse CV data', 'raw' => $jobApplication->cv_data]; // Provide raw if parsing fails
+        }
+
+        $compatibilityAnalysis = !empty($jobApplication->compatibility_analysis) ? json_decode($jobApplication->compatibility_analysis, true) : null;
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            Log::warning('Failed to decode compatibility_analysis for application', ['id' => $jobApplication->id, 'error' => json_last_error_msg()]);
+            $compatibilityAnalysis = ['error' => 'Could not parse compatibility analysis', 'raw' => $jobApplication->compatibility_analysis];
+        }
+
+        return view('recruiter.applications.show', compact('jobApplication', 'cvData', 'compatibilityAnalysis'));
+    }
+
+    /**
+     * Update the stage of a job application (for Kanban board).
+     *
+     * @param Request $request
+     * @param JobApplication $jobApplication
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateStage(Request $request, JobApplication $jobApplication)
+    {
+        // Authorization: Use the JobApplicationPolicy to authorize this action.
+        $this->authorize('update', $jobApplication);
+
+        $validated = $request->validate([
+            'new_status' => 'required|string|in:pending,in_review,shortlisted,interview_scheduled,interviewing,technical_test,offer_extended,offer_accepted,offer_declined,hired,rejected,withdrawn,on_hold',
+        ]);
+
+        try {
+            $oldStatus = $jobApplication->status;
+            $jobApplication->status = $validated['new_status'];
+            $jobApplication->save();
+
+            Log::info('Job application stage updated for Kanban', [
+                'application_id' => $jobApplication->id,
+                'old_status' => $oldStatus,
+                'new_status' => $jobApplication->status,
+                'updated_by' => Auth::id()
+            ]);
+
+            // Optionally, dispatch an event if other actions need to occur upon stage change
+            // event(new JobApplicationStatusUpdated($jobApplication, $oldStatus));
+
+            return response()->json([
+                'message' => 'Application stage updated successfully.',
+                'application_id' => $jobApplication->id,
+                'new_status' => $jobApplication->status,
+                'new_status_label' => JobApplication::getStatusLabel($jobApplication->status) // Send back the label too
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating job application stage for Kanban', [
+                'application_id' => $jobApplication->id,
+                'new_status_requested' => $validated['new_status'],
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'Failed to update application stage.', 'details' => $e->getMessage()], 500);
+        }
     }
 
     /**

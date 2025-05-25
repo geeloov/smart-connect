@@ -140,6 +140,7 @@ class RecruiterController extends Controller
      */
     public function cvExtractionProcess(Request $request)
     {
+        \Illuminate\Support\Facades\Log::info('Recruiter CV Process Request data:', $request->all());
         // Validate the request
         $request->validate([
             'cv_file' => 'required|file|mimes:pdf|max:10240', // 10MB max

@@ -29,6 +29,9 @@ class CVExtractionController extends Controller
      */
     public function process(Request $request)
     {
+        // \Illuminate\Support\Facades\Log::info('Request data:', $request->all()); // For logging
+        // dd($request->all()); // For immediate browser output and script halt
+        
         $request->validate([
             'cv_file' => 'required|file|mimes:pdf|max:10240', // 10MB max
             'job_position_id' => 'required|exists:job_positions,id' // Updated validation

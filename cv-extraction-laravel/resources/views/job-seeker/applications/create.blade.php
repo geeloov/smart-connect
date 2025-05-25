@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+<div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         @if(isset($jobPosition))
             <!-- Header Section -->
             <div class="relative mb-12">
-                <div class="absolute inset-0 bg-indigo-600 opacity-10 rounded-2xl"></div>
-                <div class="relative z-10 p-6 sm:p-8 md:p-10 lg:p-12 bg-white rounded-2xl shadow-xl border border-indigo-100 overflow-hidden">
+                {{-- <div class="absolute inset-0 bg-indigo-600 opacity-10 rounded-2xl"></div> --}}
+                <div class="relative z-10 p-6 sm:p-8 md:p-10 lg:p-12 bg-white rounded-2xl border-2 border-[#191A23] overflow-hidden" style="box-shadow: 0px 6px 0px 0 #191a23;">
                     <!-- Header Background Pattern -->
                     <div class="absolute top-0 right-0 -mt-12 -mr-12 hidden lg:block">
-                        <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-indigo-50">
+                        <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[#B9FF66]/20">
                             <circle cx="150" cy="150" r="150" fill="currentColor"/>
                             <circle cx="150" cy="150" r="120" fill="white"/>
                             <circle cx="150" cy="150" r="100" fill="currentColor"/>
@@ -22,8 +22,8 @@
                     <!-- Job Position Details -->
                     <div class="flex flex-col md:flex-row md:items-start gap-8">
                         <div class="flex-shrink-0">
-                            <div class="p-4 bg-indigo-600 rounded-xl shadow-md w-20 h-20 flex items-center justify-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div class="p-4 bg-[#B9FF66] rounded-xl shadow-md w-20 h-20 flex items-center justify-center border border-[#191A23]" style="box-shadow: 0px 3px 0px 0 #191a23;">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
                 </div>
@@ -32,12 +32,12 @@
                         <div class="flex-1">
                             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                 <div>
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-[#B9FF66] text-[#191A23] border border-[#191A23]" style="box-shadow: 0px 2px 0px 0 #191a23;">
                                         Job Application
                                     </span>
-                                    <h1 class="mt-3 text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">{{ $jobPosition->title }}</h1>
-                                    <div class="mt-2 flex items-center text-gray-600">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <h1 class="mt-3 text-3xl sm:text-4xl font-extrabold text-[#191A23] tracking-tight">{{ $jobPosition->title }}</h1>
+                                    <div class="mt-2 flex items-center text-[#191A23]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-[#191A23]/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                         </svg>
                                         <span class="text-lg font-medium">{{ $jobPosition->company_name }}</span>
@@ -45,7 +45,7 @@
 </div>
 
                                 <div class="inline-flex flex-wrap gap-2 mt-4 md:mt-0">
-                                    <div class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                    <div class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-[#B9FF66]/30 text-[#191A23] border border-[#191A23]/50">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -53,7 +53,7 @@
                                         {{ $jobPosition->location }}
             </div>
             
-                                    <div class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-purple-50 text-purple-700 border border-purple-100">
+                                    <div class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-[#B9FF66]/30 text-[#191A23] border border-[#191A23]/50">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
@@ -61,7 +61,7 @@
                     </div>
                                     
                                     @if($jobPosition->salary_range)
-                                    <div class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-green-50 text-green-700 border border-green-100">
+                                    <div class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-[#B9FF66]/30 text-[#191A23] border border-[#191A23]/50">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -73,41 +73,41 @@
                             
                             <!-- Application Process Steps -->
                             <div class="mt-8">
-                                <div class="flex items-center gap-2 mb-3 text-gray-800">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <div class="flex items-center gap-2 mb-3 text-[#191A23]">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
                                         </svg>
                                     <h3 class="font-semibold">Application Process</h3>
                                     </div>
                                 
                                 <div class="relative">
-                                    <div class="absolute left-5 inset-y-0 w-0.5 bg-gradient-to-b from-indigo-400 to-blue-500"></div>
+                                    <div class="absolute left-5 inset-y-0 w-0.5 bg-[#191A23]/50"></div>
                                     <ul class="space-y-6 relative z-10">
                                         <li class="flex items-start">
-                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-600 flex items-center justify-center shadow-md mr-4">
-                                                <span class="text-white font-medium">1</span>
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-[#191A23] flex items-center justify-center shadow-md mr-4 border border-[#B9FF66]/50">
+                                                <span class="text-[#B9FF66] font-medium">1</span>
                                             </div>
                                             <div class="flex-1 pt-1.5">
-                                                <h4 class="font-medium text-gray-900">Submit Application</h4>
-                                                <p class="text-sm text-gray-600 mt-1">Upload your CV and cover letter to apply for this position</p>
+                                                <h4 class="font-medium text-[#191A23]">{{--Submit Application--}}Upload Your Documents</h4>
+                                                <p class="text-sm text-[#191A23]/80 mt-1">Upload your CV and cover letter to apply for this position</p>
                                             </div>
                                         </li>
                                         <li class="flex items-start">
-                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-500 flex items-center justify-center shadow-md mr-4">
-                                                <span class="text-white font-medium">2</span>
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-[#191A23] flex items-center justify-center shadow-md mr-4 border border-[#B9FF66]/50">
+                                                <span class="text-[#B9FF66] font-medium">2</span>
                                             </div>
                                             <div class="flex-1 pt-1.5">
-                                                <h4 class="font-medium text-gray-900">CV Analysis</h4>
-                                                <p class="text-sm text-gray-600 mt-1">We'll analyze your CV to match it against job requirements</p>
+                                                <h4 class="font-medium text-[#191A23]">CV Analysis</h4>
+                                                <p class="text-sm text-[#191A23]/80 mt-1">We'll analyze your CV to match it against job requirements</p>
                                             </div>
                                         </li>
                                         <li class="flex items-start">
-                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-500 flex items-center justify-center shadow-md mr-4">
-                                                <span class="text-white font-medium">3</span>
+                                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-[#191A23] flex items-center justify-center shadow-md mr-4 border border-[#B9FF66]/50">
+                                                <span class="text-[#B9FF66] font-medium">3</span>
                                             </div>
                                             <div class="flex-1 pt-1.5">
-                                                <h4 class="font-medium text-gray-900">Recruiter Review</h4>
-                                                <p class="text-sm text-gray-600 mt-1">A recruiter will review your application and compatibility score</p>
+                                                <h4 class="font-medium text-[#191A23]">Recruiter Review</h4>
+                                                <p class="text-sm text-[#191A23]/80 mt-1">A recruiter will review your application and compatibility score</p>
                                             </div>
                                         </li>
                                     </ul>
@@ -173,25 +173,25 @@
                 <!-- Left Column: Job Details -->
                 <div class="lg:col-span-2 space-y-8">
                     <!-- Job Description Card -->
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="bg-white rounded-xl shadow-md border border-[#191A23] overflow-hidden" style="box-shadow: 0px 5px 0px 0 #191a23;">
+                        <div class="border-b border-[#191A23]/30 px-6 py-4 flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-[#191A23] flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                         </svg>
                                         Job Description
                             </h2>
-                            <span class="text-sm font-medium text-indigo-600 rounded-full bg-indigo-50 px-3 py-1">
+                            <span class="text-sm font-semibold text-[#191A23] rounded-lg bg-[#B9FF66]/50 px-3 py-1 border border-[#191A23]/50">
                                 Details
                             </span>
                         </div>
                         <div class="px-6 py-5">
-                            <div id="job-description-content" class="prose prose-indigo max-w-none relative overflow-hidden transition-all duration-300" style="max-height: 200px;">
-                                <p class="whitespace-pre-line text-gray-700">{{ $jobPosition->description }}</p>
+                            <div id="job-description-content" class="prose prose-sm max-w-none relative overflow-hidden transition-all duration-300 text-[#191A23]" style="max-height: 200px;">
+                                <p class="whitespace-pre-line">{{ $jobPosition->description }}</p>
                                 <!-- Gradient overlay for collapsed state -->
                                 <div id="description-fade" class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent"></div>
                             </div>
-                            <button id="toggle-description" class="mt-3 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-800 transition focus:outline-none">
+                            <button id="toggle-description" class="mt-3 flex items-center justify-center text-sm font-medium text-[#191A23] hover:text-[#191A23]/80 transition focus:outline-none">
                                 <span id="read-more-text">Read more</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -202,25 +202,25 @@
                     
                     <!-- Requirements Card -->
                                 @if($jobPosition->requirements)
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div class="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-                            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="bg-white rounded-xl shadow-md border border-[#191A23] overflow-hidden" style="box-shadow: 0px 5px 0px 0 #191a23;">
+                        <div class="border-b border-[#191A23]/30 px-6 py-4 flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-[#191A23] flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                         </svg>
                                         Requirements
                             </h2>
-                            <span class="text-sm font-medium text-purple-600 rounded-full bg-purple-50 px-3 py-1">
+                            <span class="text-sm font-semibold text-[#191A23] rounded-lg bg-[#B9FF66]/50 px-3 py-1 border border-[#191A23]/50">
                                 Qualifications
                             </span>
                                     </div>
                         <div class="px-6 py-5">
-                            <div id="requirements-content" class="prose prose-indigo max-w-none relative overflow-hidden transition-all duration-300" style="max-height: 200px;">
-                                <p class="whitespace-pre-line text-gray-700">{{ $jobPosition->requirements }}</p>
+                            <div id="requirements-content" class="prose prose-sm max-w-none relative overflow-hidden transition-all duration-300 text-[#191A23]" style="max-height: 200px;">
+                                <p class="whitespace-pre-line">{{ $jobPosition->requirements }}</p>
                                 <!-- Gradient overlay for collapsed state -->
                                 <div id="requirements-fade" class="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent"></div>
                             </div>
-                            <button id="toggle-requirements" class="mt-3 flex items-center justify-center text-sm font-medium text-purple-600 hover:text-purple-800 transition focus:outline-none">
+                            <button id="toggle-requirements" class="mt-3 flex items-center justify-center text-sm font-medium text-[#191A23] hover:text-[#191A23]/80 transition focus:outline-none">
                                 <span id="requirements-read-more-text">Read more</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
@@ -233,9 +233,9 @@
                     
                 <!-- Right Column: Application Tips -->
                 <div>
-                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden sticky top-8">
-                        <div class="border-b border-gray-200 bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-4">
-                            <h2 class="text-lg font-semibold text-white flex items-center">
+                    <div class="bg-white rounded-xl shadow-md border border-[#191A23] overflow-hidden sticky top-8" style="box-shadow: 0px 5px 0px 0 #191a23;">
+                        <div class="border-b border-[#191A23]/30 bg-[#191A23] px-6 py-4">
+                            <h2 class="text-lg font-semibold text-[#B9FF66] flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
@@ -243,55 +243,55 @@
                                 </h2>
                             </div>
                         <div class="p-6">
-                            <div class="rounded-lg bg-blue-50 border border-blue-100 p-4 mb-6">
+                            <div class="rounded-lg bg-[#B9FF66]/20 border border-[#191A23]/30 p-4 mb-6">
                                 <div class="flex">
                                     <div class="flex-shrink-0">
-                                        <svg class="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                                        <svg class="h-5 w-5 text-[#191A23]" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                                     </svg>
                                     </div>
                                     <div class="ml-3">
-                                        <p class="text-sm text-blue-800 font-medium">Important Details</p>
-                                        <p class="mt-1 text-sm text-blue-700">
+                                        <p class="text-sm text-[#191A23] font-medium">Important Details</p>
+                                        <p class="mt-1 text-sm text-[#191A23]/90">
                                             Make sure to include relevant skills and experiences in your application. The compatibility check will help you evaluate your match for this position.
                                         </p>
                                     </div>
                                 </div>
                                 </div>
                                 
-                            <h3 class="font-medium text-gray-900 mb-3">For Better Results:</h3>
+                            <h3 class="font-medium text-[#191A23] mb-3">For Better Results:</h3>
                             <ul class="space-y-4">
                                 <li class="flex">
-                                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center mr-3 mt-0.5">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-[#B9FF66]/40 flex items-center justify-center mr-3 mt-0.5 border border-[#191A23]/30">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#191A23]" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                         </svg>
                                     </div>
                                     <div>
-                                        <span class="text-gray-800 font-medium">Use PDF format</span>
-                                        <p class="text-gray-600 text-sm">Only PDF files (max 10MB) are accepted</p>
+                                        <span class="text-[#191A23] font-medium">Use PDF format</span>
+                                        <p class="text-[#191A23]/80 text-sm">Only PDF files (max 10MB) are accepted</p>
                                     </div>
                                     </li>
                                 <li class="flex">
-                                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center mr-3 mt-0.5">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-[#B9FF66]/40 flex items-center justify-center mr-3 mt-0.5 border border-[#191A23]/30">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#191A23]" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                         </svg>
                                     </div>
                                     <div>
-                                        <span class="text-gray-800 font-medium">Highlight relevant skills</span>
-                                        <p class="text-gray-600 text-sm">Match your experience to job requirements</p>
+                                        <span class="text-[#191A23] font-medium">Highlight relevant skills</span>
+                                        <p class="text-[#191A23]/80 text-sm">Match your experience to job requirements</p>
                                     </div>
                                     </li>
                                 <li class="flex">
-                                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center mr-3 mt-0.5">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-[#B9FF66]/40 flex items-center justify-center mr-3 mt-0.5 border border-[#191A23]/30">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-[#191A23]" viewBox="0 0 20 20" fill="currentColor">
                                             <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                         </svg>
                                     </div>
                                     <div>
-                                        <span class="text-gray-800 font-medium">Include a cover letter</span>
-                                        <p class="text-gray-600 text-sm">Explain why you're perfect for this role</p>
+                                        <span class="text-[#191A23] font-medium">Include a cover letter</span>
+                                        <p class="text-[#191A23]/80 text-sm">Explain why you're perfect for this role</p>
                                     </div>
                                     </li>
                                 </ul>
@@ -307,9 +307,9 @@
                     <input type="hidden" name="job_position_id" value="{{ $jobPosition->id }}">
                     <div class="space-y-8">
                         <!-- Application Form Card -->
-                        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                            <div class="border-b border-gray-200 bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
-                                <h2 class="text-lg font-semibold text-white flex items-center">
+                        <div class="bg-white rounded-xl shadow-md border border-[#191A23] overflow-hidden" style="box-shadow: 0px 5px 0px 0 #191a23;">
+                            <div class="border-b border-[#191A23]/30 bg-[#191A23] px-6 py-4">
+                                <h2 class="text-lg font-semibold text-[#B9FF66] flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
@@ -321,32 +321,32 @@
                                 <!-- CV Selection Section -->
                                 <div class="mb-8">
                                     <div class="flex items-center justify-between mb-4">
-                                        <h3 class="text-base font-medium text-gray-900 flex items-center">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <h3 class="text-base font-medium text-[#191A23] flex items-center">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
                                             Your Default CV
                                         </h3>
-                                        <span class="text-sm font-medium text-indigo-700 bg-indigo-50 rounded-full px-3 py-1">Will be used for compatibility check</span>
+                                        <span class="text-sm font-semibold text-[#191A23] bg-[#B9FF66]/50 rounded-lg px-3 py-1 border border-[#191A23]/50">Will be used for compatibility check</span>
                                 </div>
                                 
-                                    <div class="bg-gradient-to-r from-gray-50 to-indigo-50 rounded-lg border border-indigo-100 p-5">
+                                    <div class="bg-white rounded-lg border border-[#191A23]/50 p-5">
                                         @if(isset($defaultCV))
                                         <div class="mb-5">
                                             <input id="use_default_cv" name="use_default_cv" type="hidden" value="1">
                                             <!-- This is a debugging field and not required by controller -->
                                             <input id="default_cv_id_debug" name="default_cv_id_debug" type="hidden" value="{{ $defaultCV->id }}">
-                                            <div class="rounded-lg border border-indigo-100 bg-white p-3 flex items-center">
-                                                <div class="p-2 bg-indigo-100 rounded-lg mr-3">
-                                                    <svg class="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <div class="rounded-lg border border-[#191A23]/30 bg-white p-3 flex items-center">
+                                                <div class="p-2 bg-[#B9FF66]/30 rounded-lg mr-3">
+                                                    <svg class="h-5 w-5 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                 </div>
                                                 <div>
-                                                    <span class="font-medium text-gray-800">{{ $defaultCV->file_name }}</span>
-                                                    <p class="text-xs text-gray-500 mt-0.5">Your default CV will be used for compatibility check</p>
+                                                    <span class="font-medium text-[#191A23]">{{ $defaultCV->file_name }}</span>
+                                                    <p class="text-xs text-[#191A23]/70 mt-0.5">Your default CV will be used for compatibility check</p>
                             </div>
-                                                <a href="{{ asset('storage/job_seeker_cvs/' . $defaultCV->file_name) }}" target="_blank" class="ml-auto p-2 text-indigo-600 hover:text-indigo-800 transition">
+                                                <a href="{{ asset('storage/job_seeker_cvs/' . $defaultCV->file_name) }}" target="_blank" class="ml-auto p-2 text-[#191A23] hover:text-[#B9FF66] transition">
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -355,16 +355,18 @@
                                 </div>
                             </div>
                             @else
-                                        <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+                                        <div class="rounded-lg border border-yellow-400 bg-yellow-50 p-4">
                                             <div class="flex">
                                                 <div class="flex-shrink-0">
-                                                    <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <svg class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
                                                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
                                         </svg>
                                                 </div>
                                                 <div class="ml-3">
-                                                    <p class="text-sm text-yellow-700">
-                                                        You don't have a default CV set up. Please <a href="{{ route('job-seeker.cvs.index') }}" class="font-medium underline text-yellow-800">set a default CV in your profile</a> before checking compatibility.
+                                                    <p class="text-sm text-yellow-800">
+                                                        You don't have a default CV set up. Please 
+                                                        {{-- <a href="{{ route('job-seeker.cvs.index') }}" class="font-medium underline text-yellow-900 hover:text-yellow-700">set a default CV in your profile</a> --}}
+                                                        set a default CV in your profile before checking compatibility.
                                     </p>
                                 </div>
                                             </div>
@@ -413,7 +415,9 @@
                                 
                                 <!-- Submit Button -->
                                 <div class="mt-8 flex flex-col sm:flex-row sm:justify-center gap-4">
-                                    <button type="button" id="checkCompatibilityBtn" class="inline-flex items-center justify-center py-3 px-5 border border-transparent rounded-lg text-base font-medium text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 shadow-sm transition-all duration-150 transform hover:scale-[1.01]" 
+                                    <button type="button" id="checkCompatibilityBtn" 
+                                        class="inline-flex items-center justify-center py-3 px-6 rounded-xl border-2 border-[#191A23] bg-[#B9FF66] text-[#191A23] font-semibold hover:bg-[#a7e85c] transition-all duration-200 text-center transform hover:-translate-y-1"
+                                        style="box-shadow: 0px 4px 0px 0 #191a23;"
                                         {{ !isset($defaultCV) ? 'disabled' : '' }}
                                         {{ isset($existingAnalysis) ? 'disabled' : '' }}>
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -424,19 +428,19 @@
                                 </div>
                                         
                                 <div id="compatibility-loading" class="hidden mt-5">
-                                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <div class="bg-white border border-[#191A23]/30 rounded-lg p-4">
                                             <div class="flex items-center space-x-3">
-                                            <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-teal-500"></div>
-                                            <span class="text-sm text-gray-700">Analyzing your CV for compatibility...</span>
+                                            <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#B9FF66]"></div>
+                                            <span class="text-sm text-[#191A23]">Analyzing your CV for compatibility...</span>
                                             </div>
                                         </div>
                                     </div>
                                     
                                 <!-- Terms acceptance text -->
-                                <p class="mt-4 text-sm text-gray-500 text-center">
+                                <p class="mt-4 text-sm text-[#191A23]/70 text-center">
                                     By checking compatibility, you agree to our 
-                                    <a href="#" class="text-indigo-600 hover:text-indigo-500">Terms of Service</a> and 
-                                    <a href="#" class="text-indigo-600 hover:text-indigo-500">Privacy Policy</a>.
+                                    <a href="#" class="text-[#191A23] hover:text-[#B9FF66] underline">Terms of Service</a> and 
+                                    <a href="#" class="text-[#191A23] hover:text-[#B9FF66] underline">Privacy Policy</a>.
                                 </p>
                             </div>
                         </div>
@@ -446,9 +450,9 @@
                     </div>
                     
                     <!-- Cover Letter Section -->
-                    <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div class="border-b border-gray-200 bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4">
-                            <h2 class="text-lg font-semibold text-white flex items-center">
+                    <div class="mt-8 bg-white rounded-xl shadow-md border border-[#191A23] overflow-hidden" style="box-shadow: 0px 5px 0px 0 #191a23;">
+                        <div class="border-b border-[#191A23]/30 bg-[#191A23] px-6 py-4">
+                            <h2 class="text-lg font-semibold text-[#B9FF66] flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                 </svg>
@@ -457,10 +461,10 @@
                         </div>
                         <div class="p-6">
                             <div class="mb-4">
-                                <label for="cover_letter" class="block text-sm font-medium text-gray-700 mb-2">Write a personalized message to the employer</label>
-                                <textarea id="cover_letter" name="cover_letter" rows="6" class="shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border border-gray-300 rounded-md p-3" placeholder="Explain why you're a great fit for this position...">{{ old('cover_letter') }}</textarea>
+                                <label for="cover_letter" class="block text-sm font-medium text-[#191A23] mb-2">Write a personalized message to the employer</label>
+                                <textarea id="cover_letter" name="cover_letter" rows="6" class="shadow-sm block w-full focus:ring-[#B9FF66] focus:border-[#B9FF66] sm:text-sm border border-[#191A23]/50 rounded-md p-3 text-[#191A23] placeholder-[#191A23]/60 bg-white focus:bg-white transition-all" placeholder="Explain why you're a great fit for this position...">{{ old('cover_letter') }}</textarea>
                             </div>
-                            <p class="text-sm text-gray-600">
+                            <p class="text-sm text-[#191A23]/80">
                                 A good cover letter can significantly increase your chances of getting an interview. Keep it concise and focused on how your skills and experience align with the job requirements.
                             </p>
                         </div>
@@ -468,7 +472,9 @@
                     
                     <!-- Final Submit Button -->
                     <div class="mt-8 flex justify-center">
-                        <button type="submit" class="inline-flex items-center justify-center py-3 px-8 border border-transparent rounded-lg text-base font-medium text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg transition-all duration-150 transform hover:scale-[1.02]">
+                        <button type="submit" 
+                            class="inline-flex items-center justify-center py-3 px-8 rounded-xl border-2 border-[#191A23] bg-[#B9FF66] text-[#191A23] font-semibold hover:bg-[#a7e85c] transition-all duration-200 text-center transform hover:-translate-y-1 shadow-lg"
+                            style="box-shadow: 0px 4px 0px 0 #191a23;">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -505,9 +511,9 @@
 
 <!-- Compatibility Results Template -->
 <script type="text/template" id="compatibility-results-template">
-    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden animate-fadeIn">
-        <div class="border-b border-gray-200 bg-gradient-to-r from-teal-600 to-teal-500 px-6 py-4">
-            <h2 class="text-lg font-semibold text-white flex items-center">
+    <div class="bg-white rounded-xl shadow-md border border-[#191A23] overflow-hidden animate-fadeIn" style="box-shadow: 0px 5px 0px 0 #191a23;">
+        <div class="border-b border-[#191A23]/30 bg-[#191A23] px-6 py-4">
+            <h2 class="text-lg font-semibold text-[#B9FF66] flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -518,33 +524,33 @@
         <div class="p-6">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Score Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col items-center">
+                <div class="bg-white rounded-xl shadow-md border border-[#191A23] p-5 flex flex-col items-center" style="box-shadow: 0px 3px 0px 0 #191a23;">
                     <div id="compatibility-score-circle" class="relative flex items-center justify-center">
                         <svg class="w-32 h-32" viewBox="0 0 36 36">
                             <path class="score-bg"
                                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                 fill="none"
-                                stroke="#E5E7EB"
+                                stroke="#191A2320" // Lighter version of #191A23 for background
                                 stroke-width="3"
                                 stroke-dasharray="100, 100"
                             />
                             <path class="score-value"
                                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                                 fill="none"
-                                stroke="#10B981"
+                                stroke="#B9FF66" // Default to lime green
                                 stroke-width="3"
                                 stroke-dasharray="0, 100"
                                 id="score-path"
                             />
                         </svg>
                         <div class="absolute text-center">
-                            <div class="text-4xl font-bold text-gray-900" id="compatibility-score-value">-</div>
-                            <div class="text-sm font-medium text-gray-500">/ 100</div>
+                            <div class="text-4xl font-bold text-[#191A23]" id="compatibility-score-value">-</div>
+                            <div class="text-sm font-medium text-[#191A23]/70">/ 100</div>
                         </div>
                     </div>
-                    <h4 class="text-xl font-medium text-gray-900 mt-3 mb-1">Match Score</h4>
-                    <p id="score-description" class="text-center text-sm text-gray-600">No analysis yet</p>
-                    <div id="from-cache-indicator" class="hidden mt-3 text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                    <h4 class="text-xl font-medium text-[#191A23] mt-3 mb-1">Match Score</h4>
+                    <p id="score-description" class="text-center text-sm text-[#191A23]/80">No analysis yet</p>
+                    <div id="from-cache-indicator" class="hidden mt-3 text-xs bg-[#B9FF66]/30 text-[#191A23] px-3 py-1 rounded-full border border-[#191A23]/30">
                         <span class="flex items-center">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -555,20 +561,20 @@
                 </div>
                                                     
                 <!-- Analysis Card -->
-                <div class="md:col-span-2 bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-sm border border-gray-200 p-5 transition-all duration-200 hover:shadow-md">
-                    <h4 class="text-lg font-medium text-gray-900 mb-3 flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="md:col-span-2 bg-white rounded-xl shadow-md border border-[#191A23] p-5 transition-all duration-200 hover:shadow-lg" style="box-shadow: 0px 3px 0px 0 #191a23;">
+                    <h4 class="text-lg font-medium text-[#191A23] mb-3 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                         </svg>
                         Analysis Summary
                     </h4>
-                    <div id="compatibility-explanation" class="prose prose-sm text-gray-700 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                    <div id="compatibility-explanation" class="prose prose-sm text-[#191A23]/90 mb-6 p-4 bg-gray-50 rounded-lg border border-[#191A23]/20">
                         <div class="animate-pulse flex space-x-4">
                             <div class="flex-1 space-y-3">
-                                <div class="h-2 bg-gray-200 rounded"></div>
-                                <div class="h-2 bg-gray-200 rounded w-5/6"></div>
-                                <div class="h-2 bg-gray-200 rounded"></div>
-                                <div class="h-2 bg-gray-200 rounded w-4/6"></div>
+                                <div class="h-2 bg-gray-300 rounded"></div>
+                                <div class="h-2 bg-gray-300 rounded w-5/6"></div>
+                                <div class="h-2 bg-gray-300 rounded"></div>
+                                <div class="h-2 bg-gray-300 rounded w-4/6"></div>
                             </div>
                         </div>
                     </div>
@@ -577,47 +583,47 @@
                     <div class="mt-4 space-y-5">
                         <div>
                             <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium text-gray-900 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <span class="text-sm font-medium text-[#191A23] flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                     </svg>
                                     Skills Match
                                 </span>
-                                <span id="skills-score" class="text-sm font-medium text-blue-700">-</span>
+                                <span id="skills-score" class="text-sm font-medium text-[#191A23]">-</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                                <div id="skills-progress" class="bg-gradient-to-r from-blue-600 to-blue-500 h-2.5 rounded-full" style="width: 0%"></div>
+                            <div class="w-full bg-[#191A23]/20 rounded-full h-2.5 overflow-hidden">
+                                <div id="skills-progress" class="bg-gradient-to-r from-[#B9FF66] to-[#a3e65a] h-2.5 rounded-full" style="width: 0%"></div>
                             </div>
                         </div>
                                                             
                         <div>
                             <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium text-gray-900 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <span class="text-sm font-medium text-[#191A23] flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                     </svg>
                                     Experience Match
                                 </span>
-                                <span id="experience-score" class="text-sm font-medium text-green-700">-</span>
+                                <span id="experience-score" class="text-sm font-medium text-[#191A23]">-</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                                <div id="experience-progress" class="bg-gradient-to-r from-green-600 to-green-500 h-2.5 rounded-full" style="width: 0%"></div>
+                            <div class="w-full bg-[#191A23]/20 rounded-full h-2.5 overflow-hidden">
+                                <div id="experience-progress" class="bg-gradient-to-r from-[#B9FF66] to-[#a3e65a] h-2.5 rounded-full" style="width: 0%"></div>
                             </div>
                         </div>
                                                             
                         <div>
                             <div class="flex justify-between items-center mb-2">
-                                <span class="text-sm font-medium text-gray-900 flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <span class="text-sm font-medium text-[#191A23] flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path d="M12 14l9-5-9-5-9 5 9 5z" />
                                         <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998a12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
                                     </svg>
                                     Education Match
                                 </span>
-                                <span id="education-score" class="text-sm font-medium text-purple-700">-</span>
+                                <span id="education-score" class="text-sm font-medium text-[#191A23]">-</span>
                             </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                                <div id="education-progress" class="bg-gradient-to-r from-purple-600 to-purple-500 h-2.5 rounded-full" style="width: 0%"></div>
+                            <div class="w-full bg-[#191A23]/20 rounded-full h-2.5 overflow-hidden">
+                                <div id="education-progress" class="bg-gradient-to-r from-[#B9FF66] to-[#a3e65a] h-2.5 rounded-full" style="width: 0%"></div>
                             </div>
                         </div>
                     </div>
@@ -625,9 +631,9 @@
             </div>
                                                 
             <!-- Skills Analysis Section -->
-            <div class="mt-6 bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-sm border border-gray-200 p-5 transition-all duration-200 hover:shadow-md">
-                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="mt-6 bg-white rounded-xl shadow-md border border-[#191A23] p-5 transition-all duration-200 hover:shadow-lg" style="box-shadow: 0px 3px 0px 0 #191a23;">
+                <h4 class="text-lg font-medium text-[#191A23] mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                     Skills Analysis
@@ -635,10 +641,10 @@
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Matched Skills -->
-                    <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4 border border-green-200 hover:shadow-sm transition-all duration-200">
-                        <h5 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                            <div class="flex-shrink-0 h-5 w-5 rounded-full bg-green-100 flex items-center justify-center mr-2 border border-green-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                    <div class="bg-[#B9FF66]/20 rounded-lg p-4 border border-[#191A23]/30 hover:shadow-sm transition-all duration-200">
+                        <h5 class="text-sm font-medium text-[#191A23] mb-3 flex items-center">
+                            <div class="flex-shrink-0 h-5 w-5 rounded-full bg-[#B9FF66]/50 flex items-center justify-center mr-2 border border-[#191A23]/40">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-[#191A23]" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                                 </svg>
                             </div>
@@ -646,18 +652,18 @@
                         </h5>
                         <div id="matched-skills" class="flex flex-wrap gap-2">
                             <div class="animate-pulse flex flex-wrap gap-2">
-                                <div class="h-6 bg-green-200 rounded-full w-16"></div>
+                                <div class="h-6 bg-[#B9FF66]/40 rounded-full w-16"></div>
                             </div>
                         </div>
-                        <div id="no-matched-skills" class="hidden p-3 bg-white bg-opacity-50 rounded-lg border border-green-100 text-sm text-gray-500 italic">
+                        <div id="no-matched-skills" class="hidden p-3 bg-white bg-opacity-50 rounded-lg border border-[#B9FF66]/30 text-sm text-[#191A23]/70 italic">
                             No matched skills found
                         </div>
                     </div>
                                                         
                     <!-- Missing Skills -->
-                    <div class="bg-gradient-to-r from-red-50 to-red-100 rounded-lg p-4 border border-red-200 hover:shadow-sm transition-all duration-200">
-                        <h5 class="text-sm font-medium text-gray-900 mb-3 flex items-center">
-                            <div class="flex-shrink-0 h-5 w-5 rounded-full bg-red-100 flex items-center justify-center mr-2 border border-red-200">
+                    <div class="bg-red-50 rounded-lg p-4 border border-red-200 hover:shadow-sm transition-all duration-200">
+                        <h5 class="text-sm font-medium text-[#191A23] mb-3 flex items-center">
+                            <div class="flex-shrink-0 h-5 w-5 rounded-full bg-red-100 flex items-center justify-center mr-2 border border-red-300">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-red-600" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
@@ -669,15 +675,15 @@
                                 <div class="h-6 bg-red-200 rounded-full w-16"></div>
                             </div>
                         </div>
-                        <div id="no-missing-skills" class="hidden p-3 bg-white bg-opacity-50 rounded-lg border border-red-100 text-sm text-gray-500 italic">
+                        <div id="no-missing-skills" class="hidden p-3 bg-white bg-opacity-50 rounded-lg border border-red-100 text-sm text-[#191A23]/70 italic">
                             No missing skills found
                         </div>
                     </div>
                 </div>
                 
-                <div class="mt-4 text-sm text-gray-600 bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                <div class="mt-4 text-sm text-[#191A23]/90 bg-[#B9FF66]/20 p-3 rounded-lg border border-[#191A23]/30">
                     <p class="flex items-start">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-[#191A23] flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <span>This analysis helps you understand how your qualifications align with the job requirements. Consider adding missing skills to your CV for better job matches.</span>
@@ -686,18 +692,18 @@
             </div>
 
             <!-- Overall Recommendation Section -->
-            <div class="mt-6 bg-gradient-to-br from-white to-indigo-50 rounded-xl shadow-sm border border-indigo-200 p-5 transition-all duration-200 hover:shadow-md">
-                <h4 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="mt-6 bg-white rounded-xl shadow-md border border-[#191A23] p-5 transition-all duration-200 hover:shadow-lg" style="box-shadow: 0px 3px 0px 0 #191a23;">
+                <h4 class="text-lg font-medium text-[#191A23] mb-4 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     What To Do Next
                 </h4>
                 
-                <div id="recommendation-section" class="p-4 bg-white rounded-lg border border-indigo-100">
+                <div id="recommendation-section" class="p-4 bg-gray-50 rounded-lg border border-[#191A23]/20">
                     <div id="high-score-advice" class="hidden">
                         <p class="text-green-700 font-medium mb-2">Great match! Your CV shows excellent compatibility with this position.</p>
-                        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                        <ul class="list-disc list-inside text-sm text-[#191A23]/90 space-y-1">
                             <li>Apply with confidence as your profile strongly aligns with the requirements</li>
                             <li>In your cover letter, emphasize your matched skills and relevant experience</li>
                             <li>Prepare to discuss specific examples of your experience with the matched skills</li>
@@ -706,7 +712,7 @@
                     
                     <div id="medium-score-advice" class="hidden">
                         <p class="text-blue-700 font-medium mb-2">Good potential! You meet many of the requirements for this position.</p>
-                        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                        <ul class="list-disc list-inside text-sm text-[#191A23]/90 space-y-1">
                             <li>Apply for this position, highlighting the skills and experience you do have</li>
                             <li>Address how you're developing the missing skills in your cover letter</li>
                             <li>Consider taking quick courses on the missing skills to improve your profile</li>
@@ -715,7 +721,7 @@
                     
                     <div id="low-score-advice" class="hidden">
                         <p class="text-yellow-700 font-medium mb-2">There's a gap between your profile and this position's requirements.</p>
-                        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                        <ul class="list-disc list-inside text-sm text-[#191A23]/90 space-y-1">
                             <li>Consider developing the missing skills before applying</li>
                             <li>Look for more suitable positions that better match your current skill set</li>
                             <li>If you're transitioning careers, mention your transferable skills in your cover letter</li>
@@ -724,7 +730,7 @@
                     
                     <div id="very-low-score-advice" class="hidden">
                         <p class="text-red-700 font-medium mb-2">This position may not be the best match for your current profile.</p>
-                        <ul class="list-disc list-inside text-sm text-gray-700 space-y-1">
+                        <ul class="list-disc list-inside text-sm text-[#191A23]/90 space-y-1">
                             <li>Focus on positions that better match your current skills and experience</li>
                             <li>Consider training or courses to develop the missing skills</li>
                             <li>Update your CV to highlight transferable skills if you still wish to apply</li>

@@ -14,6 +14,7 @@ use App\Http\Controllers\JobSeeker\ApplicationController as JobSeekerApplication
 use App\Http\Controllers\JobSeeker\CvController;
 use App\Http\Controllers\JobSeeker\ProfileController as JobSeekerProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PipelineController;
 
 /*
 |--------------------------------------------------------------------------
@@ -113,10 +114,14 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/job-positions/{jobPosition}', [JobPositionController::class, 'destroy'])->name('job-positions.destroy');
         Route::patch('/job-positions/{jobPosition}/toggle-active', [JobPositionController::class, 'toggleActive'])->name('job-positions.toggle-active');
         
+        // Candidate Pipeline
+        Route::get('/pipeline', [PipelineController::class, 'index'])->name('pipeline.index');
+
         // Job applications management
         Route::get('/applications', [JobApplicationController::class, 'recruiterApplications'])->name('applications.index');
         Route::get('/applications/{jobApplication}', [JobApplicationController::class, 'recruiterShowApplication'])->name('applications.show');
         Route::patch('/applications/{jobApplication}/status', [JobApplicationController::class, 'updateStatus'])->name('applications.update-status');
+        Route::patch('/applications/{jobApplication}/update-stage', [JobApplicationController::class, 'updateStage'])->name('applications.update-stage');
     });
 
     // Additional route as an alias to the existing applications.create route

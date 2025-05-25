@@ -45,6 +45,49 @@ class JobApplication extends Model
         // 'compatibility_analysis' => 'json',  // This would also cause problems!
     ];
 
+    public static function getStatusLabel(string $statusKey): string
+    {
+        $labels = [
+            'pending' => 'Pending Review',
+            'in_review' => 'In Review',
+            'shortlisted' => 'Shortlisted',
+            'interview_scheduled' => 'Interview Scheduled',
+            'interviewing' => 'Interviewing', // General interviewing stage
+            'technical_test' => 'Technical Test',
+            'offer_extended' => 'Offer Extended',
+            'offer_accepted' => 'Offer Accepted',
+            'offer_declined' => 'Offer Declined',
+            'hired' => 'Hired',
+            'rejected' => 'Rejected',
+            'withdrawn' => 'Withdrawn by Candidate',
+            'on_hold' => 'On Hold',
+        ];
+
+        return $labels[$statusKey] ?? ucfirst(str_replace('_', ' ', $statusKey));
+    }
+
+    public static function getStatusKeys(): array
+    {
+        // Define the order of stages for the Kanban board
+        // Ensure these keys match the 'status' enum/values in your database 
+        // and the keys used in the $stageColors array in pipeline.blade.php
+        return [
+            'pending',          // e.g., Initial state
+            'in_review',        // Recruiter is looking at it
+            'shortlisted',      // Interested, potential for interview
+            'interview_scheduled', // Interview has been set up
+            'interviewing',     // Currently in the interview process
+            'technical_test',   // Candidate is undergoing a technical assessment
+            'offer_extended',   // Offer has been made
+            'offer_accepted',   // Candidate accepted the offer (can be same as 'hired')
+            'hired',            // Candidate is hired
+            'rejected',         // Application was rejected
+            'offer_declined',   // Candidate declined the offer
+            'withdrawn',        // Candidate withdrew their application
+            'on_hold',          // Application is temporarily on hold
+        ];
+    }
+
     /**
      * Get the CV data.
      *
