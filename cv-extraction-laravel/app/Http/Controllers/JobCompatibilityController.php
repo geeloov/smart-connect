@@ -58,8 +58,14 @@ class JobCompatibilityController extends Controller
                         'file_path' => $cv->file_path
                     ]);
                     
-                    // Check if the CV file actually exists
-                    $cvPath = storage_path('app/public/' . $cv->file_path);
+                    // Handle both relative and absolute paths
+                    if (str_contains($cv->file_path, storage_path(''))) {
+                        // If file_path already contains the full path, use it directly
+                        $cvPath = $cv->file_path;
+                    } else {
+                        // If file_path is relative, construct the full path
+                        $cvPath = storage_path('app/public/' . $cv->file_path);
+                    }
                     
                     if (!file_exists($cvPath)) {
                         Log::error('CV file does not exist at path', ['path' => $cvPath]);

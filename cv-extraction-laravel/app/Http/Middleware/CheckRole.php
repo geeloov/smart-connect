@@ -15,19 +15,31 @@ class CheckRole
      */
     public function handle(Request $request, Closure $next, string $role): Response
     {
-        if (!$request->user() || $request->user()->role !== $role) {
+        // First check if user is authenticated
+        if (!$request->user()) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Unauthorized.'], 403);
+                return response()->json(['message' => 'Unauthenticated.'], 401);
             }
-            
-            // Redirect to appropriate dashboard based on user role
-            if ($request->user() && $request->user()->role === 'recruiter') {
-                return redirect()->route('recruiter.dashboard');
-            } elseif ($request->user() && $request->user()->role === 'job_seeker') {
-                return redirect()->route('job-seeker.dashboard');
-            }
-            
             return redirect()->route('login');
+        }
+        
+        // Then check if user has the correct role
+        if ($request->user()->role !== $role) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Unauthorized. Insufficient permissions.'], 403);
+            }
+            
+            // Redirect to appropriate dashboard based on user's actual role
+            if ($request->user()->role === 'recruiter') {
+                return redirect()->route('recruiter.dashboard')
+                    ->with('error', 'You do not have permission to access that page.');
+            } elseif ($request->user()->role === 'job_seeker') {
+                return redirect()->route('job-seeker.dashboard')
+                    ->with('error', 'You do not have permission to access that page.');
+            }
+            
+            return redirect()->route('home')
+                ->with('error', 'You do not have permission to access that page.');
         }
 
         return $next($request);

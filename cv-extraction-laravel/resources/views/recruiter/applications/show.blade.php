@@ -122,7 +122,27 @@
                 </div>
                 <div class="flex flex-wrap gap-x-6 gap-y-2 text-sm text-[#191A23]/70 mb-6">
                     <span>Applied: {{ $jobApplication->created_at->format('M d, Y') }}</span>
-                    <span>Status: <span class="font-semibold text-[#191A23]">{{ ucfirst(str_replace('_', ' ', $jobApplication->status)) }}</span></span>
+                    <div>
+                        <span class="text-sm text-[#191A23]/70">Status: </span>
+                        @php
+                            // Logic to determine badge class, potentially reusing $statusColors from header if available in this scope
+                            // or redefining if necessary. For simplicity, let's assume $statusColors is available or easily adaptable.
+                            // This is a simplified version, actual $statusColors array is defined earlier in the file.
+                            // We need to ensure it's accessible or re-declared if not.
+                            // For this edit, we'll focus on the HTML structure and class application.
+                            // The $statusColors array is defined around line 60-70.
+                            // We'll assume it's accessible here. If not, it would need to be passed or re-queried.
+
+                            $currentStatusInCard = $jobApplication->status;
+                            if ($currentStatusInCard === 'in_review' && !isset($statusColors['in_review']) && isset($statusColors['reviewing'])) {
+                                $currentStatusInCard = 'reviewing'; // Alias if needed
+                            }
+                            $statusBadgeClass = $statusColors[$currentStatusInCard] ?? 'bg-gray-500/20 text-gray-700 border-gray-700/50';
+                        @endphp
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border {{ $statusBadgeClass }}">
+                            {{ ucfirst(str_replace('_', ' ', $jobApplication->status)) }}
+                        </span>
+                    </div>
                 </div>
                 
                 @if($jobApplication->cover_letter)
@@ -153,16 +173,26 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div class="md:col-span-2">
                         <label for="status" class="block text-sm font-medium text-[#191A23]/80 mb-1">Status</label>
+                        @php
+                            $allStatuses = [
+                                'pending' => 'Pending',
+                                'in_review' => 'In Review',
+                                'shortlisted' => 'Shortlisted',
+                                'interviewed' => 'Interviewed',
+                                'offered' => 'Offered',
+                                'hired' => 'Hired',
+                                'rejected' => 'Rejected',
+                                'accepted' => 'Accepted',
+                                'withdrawn' => 'Withdrawn' // Added withdrawn
+                            ];
+                        @endphp
                         <select id="status" name="status" 
-                            class="block w-full px-4 py-3 bg-white border border-[#191A23]/50 rounded-xl text-[#191A23] focus:ring-2 focus:ring-[#B9FF66]/70 focus:border-[#191A23] text-base">
-                            <option value="pending" {{ $jobApplication->status == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="in_review" {{ $jobApplication->status == 'in_review' ? 'selected' : '' }}>In Review</option>
-                            <option value="shortlisted" {{ $jobApplication->status == 'shortlisted' ? 'selected' : '' }}>Shortlisted</option>
-                            <option value="interviewed" {{ $jobApplication->status == 'interviewed' ? 'selected' : '' }}>Interviewed</option>
-                            <option value="offered" {{ $jobApplication->status == 'offered' ? 'selected' : '' }}>Offered</option>
-                            <option value="hired" {{ $jobApplication->status == 'hired' ? 'selected' : '' }}>Hired</option>
-                            <option value="rejected" {{ $jobApplication->status == 'rejected' ? 'selected' : '' }}>Rejected</option>
-                            <option value="accepted" {{ $jobApplication->status == 'accepted' ? 'selected' : '' }}>Accepted</option>
+                            class="block w-full px-4 py-3 bg-white border-2 border-[#191A23]/50 rounded-xl text-[#191A23] focus:ring-2 focus:ring-[#B9FF66]/70 focus:border-[#191A23] text-base">
+                            @foreach($allStatuses as $value => $displayName)
+                                <option value="{{ $value }}" {{ $jobApplication->status == $value ? 'selected' : '' }}>
+                                    {{ $displayName }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="flex items-end">

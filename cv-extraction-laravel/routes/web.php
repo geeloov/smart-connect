@@ -8,11 +8,9 @@ use App\Http\Controllers\JobSeekerController;
 use App\Http\Controllers\RecruiterController;
 use App\Http\Controllers\JobApplicationController;
 use App\Http\Controllers\JobPositionController;
-use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\JobCompatibilityController;
 use App\Http\Controllers\JobSeeker\ApplicationController as JobSeekerApplicationController;
-use App\Http\Controllers\JobSeeker\CvController;
-use App\Http\Controllers\JobSeeker\ProfileController as JobSeekerProfileController;
+use App\Http\Controllers\ChatbotController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PipelineController;
 
@@ -30,6 +28,11 @@ use App\Http\Controllers\PipelineController;
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Slack Interface Demo
+Route::get('/slack', function () {
+    return view('slack.index');
+})->name('slack.demo');
+
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login')->middleware('guest');
 Route::post('/login', [LoginController::class, 'login'])->middleware('guest');
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('register')->middleware('guest');
@@ -38,92 +41,85 @@ Route::post('/register', [RegisterController::class, 'register'])->middleware('g
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // CV Extraction Routes (accessible to both recruiters and job seekers)
-Route::get('/cv-extraction', [App\Http\Controllers\CVExtractionController::class, 'index'])->name('cv-extraction.index');
-Route::post('/cv-extraction/process', [App\Http\Controllers\CVExtractionController::class, 'process'])->name('cv-extraction.process');
-Route::post('/cv-extraction/check-compatibility', [App\Http\Controllers\CVExtractionController::class, 'checkCompatibilityScore'])->name('cv-extraction.check-compatibility');
+Route::get('/cv-extraction', [CVExtractionController::class, 'index'])->name('cv-extraction.index');
+Route::post('/cv-extraction/process', [CVExtractionController::class, 'process'])->name('cv-extraction.process');
+Route::post('/cv-extraction/check-compatibility', [CVExtractionController::class, 'checkCompatibilityScore'])->name('cv-extraction.check-compatibility');
 
-// Protected routes with authentication
-Route::middleware(['auth'])->group(function () {
-    // Job Seeker routes
-    Route::middleware('auth', \App\Http\Middleware\CheckRole::class.':job_seeker')->prefix('job-seeker')->name('job-seeker.')->group(function () {
-        Route::get('/dashboard', [JobSeekerController::class, 'dashboard'])->name('dashboard');
-        Route::get('/profile', [JobSeekerController::class, 'profile'])->name('profile');
-        Route::put('/profile/update', [JobSeekerController::class, 'updateProfile'])->name('profile.update');
-        
-        // CV Management routes
-        Route::post('/profile/cv/upload', [JobSeekerController::class, 'uploadCV'])->name('cv.upload');
-        Route::post('/profile/cv/{cv}/set-default', [JobSeekerController::class, 'setDefaultCV'])->name('cv.set-default');
-        Route::get('/profile/cv/{cv}/view', [JobSeekerController::class, 'viewCV'])->name('cv.view');
-        Route::delete('/profile/cv/{cv}/delete', [JobSeekerController::class, 'deleteCV'])->name('cv.delete');
-        Route::get('/cv/default-for-processing', [JobSeekerController::class, 'getDefaultCVForProcessing'])->name('cv.default-for-processing');
-        Route::get('/cv/{cv}/view', [JobSeekerController::class, 'viewCV'])->name('cv.view');
-        Route::delete('/cv/{cv}', [JobSeekerController::class, 'deleteCV'])->name('cv.delete');
-        Route::get('/cv/{cv}/compatibility', [JobSeekerController::class, 'getCVForCompatibility'])->name('cv.compatibility');
-        
-        Route::get('/cv-upload', [JobSeekerController::class, 'cvUpload'])->name('cv-upload');
-        Route::post('/cv-upload', [JobSeekerController::class, 'cvUploadStore'])->name('cv-upload.store');
-        Route::get('/job-matches', [JobSeekerController::class, 'jobMatches'])->name('job-matches');
-        
-        // Job listings and applications
-        Route::get('/jobs', [JobApplicationController::class, 'availableJobs'])->name('jobs.available');
-        Route::get('/jobs/{jobPosition}', [JobApplicationController::class, 'jobDetails'])->name('jobs.details');
-        
-        // Job applications
-        Route::get('/applications', [JobSeekerApplicationController::class, 'index'])->name('applications.index');
-        Route::get('/applications/{jobApplication}', [JobSeekerApplicationController::class, 'show'])->name('applications.show');
-        Route::get('/applications/{jobPosition}/create', [JobSeekerApplicationController::class, 'create'])->name('applications.create');
-        Route::post('/jobs/{jobPosition}/apply', [JobSeekerApplicationController::class, 'store'])->name('applications.store');
-        Route::post('/applications/{jobApplication}/update-status', [JobSeekerApplicationController::class, 'updateStatus'])->name('applications.update-status');
-        Route::post('/applications/{jobApplication}/add-notes', [JobSeekerApplicationController::class, 'addNotes'])->name('applications.add-notes');
+// Chatbot routes (accessible to all users)
+Route::post('/chatbot/response', [ChatbotController::class, 'getResponse'])->name('chatbot.response');
+Route::get('/chatbot/quick-questions', [ChatbotController::class, 'getQuickQuestions'])->name('chatbot.quick-questions');
 
-        // Add this within the job seeker routes group
-        Route::post('/job-compatibility/check', [JobCompatibilityController::class, 'checkCompatibility'])
-            ->name('job-compatibility.check');
-        
-        // Add route for storing compatibility results
-        Route::post('/job-compatibility/store', [JobCompatibilityController::class, 'storeCompatibility'])
-            ->name('job-compatibility.store');
-        
-        // Add route for getting CV file
-        Route::get('/cv-file/{cv}', [JobSeekerController::class, 'getCVFile'])
-            ->name('cv-file.get');
-            
-        // Add route for getting CV content as base64
-        Route::get('/cv-content/{cv}', [JobSeekerController::class, 'getCVContent'])
-            ->name('cv-content.get');
-    });
+// Job Seeker routes
+Route::middleware('role:job_seeker')->prefix('job-seeker')->name('job-seeker.')->group(function () {
+    Route::get('/dashboard', [JobSeekerController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [JobSeekerController::class, 'profile'])->name('profile');
+    Route::put('/profile/update', [JobSeekerController::class, 'updateProfile'])->name('profile.update');
     
-    // Recruiter routes
-    Route::middleware('auth', \App\Http\Middleware\CheckRole::class.':recruiter')->prefix('recruiter')->name('recruiter.')->group(function () {
-        Route::get('/dashboard', [RecruiterController::class, 'dashboard'])->name('dashboard');
-        Route::get('/profile', [RecruiterController::class, 'profile'])->name('profile');
-        Route::put('/profile/update', [RecruiterController::class, 'updateProfile'])->name('profile.update');
-        Route::get('/cv-extraction', [RecruiterController::class, 'cvExtraction'])->name('cv-extraction');
-        Route::post('/cv-extraction/process', [RecruiterController::class, 'cvExtractionProcess'])->name('cv-extraction.process');
-        Route::post('/cv-extraction/save-candidate', [RecruiterController::class, 'saveCandidate'])->name('save-candidate');
-        Route::get('/candidates', [RecruiterController::class, 'candidates'])->name('candidates');
-        Route::get('/job-matching', [RecruiterController::class, 'jobMatching'])->name('job-matching');
-        
-        // Job positions management
-        Route::get('/job-positions', [JobPositionController::class, 'index'])->name('job-positions.index');
-        Route::get('/job-positions/create', [JobPositionController::class, 'create'])->name('job-positions.create');
-        Route::post('/job-positions', [JobPositionController::class, 'store'])->name('job-positions.store');
-        Route::get('/job-positions/{jobPosition}', [JobPositionController::class, 'show'])->name('job-positions.show');
-        Route::get('/job-positions/{jobPosition}/edit', [JobPositionController::class, 'edit'])->name('job-positions.edit');
-        Route::put('/job-positions/{jobPosition}', [JobPositionController::class, 'update'])->name('job-positions.update');
-        Route::delete('/job-positions/{jobPosition}', [JobPositionController::class, 'destroy'])->name('job-positions.destroy');
-        Route::patch('/job-positions/{jobPosition}/toggle-active', [JobPositionController::class, 'toggleActive'])->name('job-positions.toggle-active');
-        
-        // Candidate Pipeline
-        Route::get('/pipeline', [PipelineController::class, 'index'])->name('pipeline.index');
+    // CV Management routes
+    Route::post('/profile/cv/upload', [JobSeekerController::class, 'uploadCV'])->name('cv.upload');
+    Route::post('/profile/cv/{cv}/set-default', [JobSeekerController::class, 'setDefaultCV'])->name('cv.set-default');
+    Route::get('/profile/cv/{cv}/view', [JobSeekerController::class, 'viewCV'])->name('cv.view');
+    Route::delete('/profile/cv/{cv}/delete', [JobSeekerController::class, 'deleteCV'])->name('cv.delete');
+    Route::get('/cv/default-for-processing', [JobSeekerController::class, 'getDefaultCVForProcessing'])->name('cv.default-for-processing');
+    Route::get('/cv/{cv}/view', [JobSeekerController::class, 'viewCV'])->name('cv.view');
+    Route::delete('/cv/{cv}', [JobSeekerController::class, 'deleteCV'])->name('cv.delete');
+    Route::get('/cv/{cv}/compatibility', [JobSeekerController::class, 'getCVForCompatibility'])->name('cv.compatibility');
+    
+    Route::get('/cv-upload', [JobSeekerController::class, 'cvUpload'])->name('cv-upload');
+    Route::post('/cv-upload', [JobSeekerController::class, 'cvUploadStore'])->name('cv-upload.store');
+    Route::get('/job-matches', [JobSeekerController::class, 'jobMatches'])->name('job-matches');
+    
+    // Job listings and applications
+    Route::get('/jobs', [JobApplicationController::class, 'availableJobs'])->name('jobs.available');
+    Route::get('/jobs/{jobPosition}', [JobApplicationController::class, 'jobDetails'])->name('jobs.details');
+    
+    // Job applications
+    Route::get('/applications', [JobSeekerApplicationController::class, 'index'])->name('applications.index');
+    Route::get('/applications/{jobApplication}', [JobSeekerApplicationController::class, 'show'])->name('applications.show');
+    Route::get('/applications/{jobPosition}/create', [JobSeekerApplicationController::class, 'create'])->name('applications.create');
+    Route::post('/jobs/{jobPosition}/apply', [JobSeekerApplicationController::class, 'store'])->name('applications.store');
+    Route::post('/applications/{jobApplication}/update-status', [JobSeekerApplicationController::class, 'updateStatus'])->name('applications.update-status');
+    Route::post('/applications/{jobApplication}/add-notes', [JobSeekerApplicationController::class, 'addNotes'])->name('applications.add-notes');
 
-        // Job applications management
-        Route::get('/applications', [JobApplicationController::class, 'recruiterApplications'])->name('applications.index');
-        Route::get('/applications/{jobApplication}', [JobApplicationController::class, 'recruiterShowApplication'])->name('applications.show');
-        Route::patch('/applications/{jobApplication}/status', [JobApplicationController::class, 'updateStatus'])->name('applications.update-status');
-        Route::patch('/applications/{jobApplication}/update-stage', [JobApplicationController::class, 'updateStage'])->name('applications.update-stage');
-    });
-
-    // Additional route as an alias to the existing applications.create route
-    Route::get('/jobs/{jobPosition}/apply', [JobApplicationController::class, 'create'])->name('jobs.apply');
+    // Job compatibility routes
+    Route::post('/job-compatibility/check', [JobCompatibilityController::class, 'checkCompatibility'])->name('job-compatibility.check');
+    Route::post('/job-compatibility/store', [JobCompatibilityController::class, 'storeCompatibility'])->name('job-compatibility.store');
+    
+    // CV file routes
+    Route::get('/cv-file/{cv}', [JobSeekerController::class, 'getCVFile'])->name('cv-file.get');
+    Route::get('/cv-content/{cv}', [JobSeekerController::class, 'getCVContent'])->name('cv-content.get');
 });
+
+// Recruiter routes
+Route::middleware('role:recruiter')->prefix('recruiter')->name('recruiter.')->group(function () {
+    Route::get('/dashboard', [RecruiterController::class, 'dashboard'])->name('dashboard');
+    Route::get('/profile', [RecruiterController::class, 'profile'])->name('profile');
+    Route::put('/profile/update', [RecruiterController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/cv-extraction', [RecruiterController::class, 'cvExtraction'])->name('cv-extraction');
+    Route::post('/cv-extraction/process', [RecruiterController::class, 'cvExtractionProcess'])->name('cv-extraction.process');
+    Route::post('/cv-extraction/save-candidate', [RecruiterController::class, 'saveCandidate'])->name('save-candidate');
+    Route::get('/candidates', [RecruiterController::class, 'candidates'])->name('candidates');
+    Route::get('/job-matching', [RecruiterController::class, 'jobMatching'])->name('job-matching');
+    
+    // Job positions management
+    Route::get('/job-positions', [JobPositionController::class, 'index'])->name('job-positions.index');
+    Route::get('/job-positions/create', [JobPositionController::class, 'create'])->name('job-positions.create');
+    Route::post('/job-positions', [JobPositionController::class, 'store'])->name('job-positions.store');
+    Route::get('/job-positions/{jobPosition}', [JobPositionController::class, 'show'])->name('job-positions.show');
+    Route::get('/job-positions/{jobPosition}/edit', [JobPositionController::class, 'edit'])->name('job-positions.edit');
+    Route::put('/job-positions/{jobPosition}', [JobPositionController::class, 'update'])->name('job-positions.update');
+    Route::delete('/job-positions/{jobPosition}', [JobPositionController::class, 'destroy'])->name('job-positions.destroy');
+    Route::patch('/job-positions/{jobPosition}/toggle-active', [JobPositionController::class, 'toggleActive'])->name('job-positions.toggle-active');
+    
+    // Candidate Pipeline
+    Route::get('/pipeline', [PipelineController::class, 'index'])->name('pipeline.index');
+
+    // Job applications management
+    Route::get('/applications', [JobApplicationController::class, 'recruiterApplications'])->name('applications.index');
+    Route::get('/applications/{jobApplication}', [JobApplicationController::class, 'recruiterShowApplication'])->name('applications.show');
+    Route::patch('/applications/{jobApplication}/status', [JobApplicationController::class, 'updateStatus'])->name('applications.update-status');
+    Route::patch('/applications/{jobApplication}/update-stage', [JobApplicationController::class, 'updateStage'])->name('applications.update-stage');
+});
+
+// Additional route as an alias to the existing applications.create route (requires authentication)
+Route::middleware('auth')->get('/jobs/{jobPosition}/apply', [JobApplicationController::class, 'create'])->name('jobs.apply');

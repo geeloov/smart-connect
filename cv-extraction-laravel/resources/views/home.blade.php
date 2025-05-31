@@ -383,4 +383,8 @@
         </div>
     </section>
 </div>
-@endsection 
+
+<!-- Include Chatbot Component -->
+@include('components.chatbot')
+
+@endsection

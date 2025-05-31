@@ -433,7 +433,16 @@ class JobSeekerController extends Controller
         // Generate a URL to the stored file
         $url = Storage::url($cv->file_path);
         
-        return response()->file(storage_path('app/public/' . $cv->file_path));
+        // Handle both relative and absolute paths for file response
+        if (str_contains($cv->file_path, storage_path(''))) {
+            // If file_path already contains the full path, use it directly
+            $filePath = $cv->file_path;
+        } else {
+            // If file_path is relative, construct the full path
+            $filePath = storage_path('app/public/' . $cv->file_path);
+        }
+
+        return response()->file($filePath);
     }
     
     /**
@@ -467,8 +476,14 @@ class JobSeekerController extends Controller
             return response()->json(['error' => 'Unauthorized access to CV'], 403);
         }
 
-        // Check if file exists in storage/app/public/cvs directory
-        $filePath = storage_path('app/public/' . $cv->file_path);
+        // Handle both relative and absolute paths
+        if (str_contains($cv->file_path, storage_path(''))) {
+            // If file_path already contains the full path, use it directly
+            $filePath = $cv->file_path;
+        } else {
+            // If file_path is relative, construct the full path
+            $filePath = storage_path('app/public/' . $cv->file_path);
+        }
         
         if (!file_exists($filePath)) {
             Log::error('CV file not found', [
@@ -511,8 +526,14 @@ class JobSeekerController extends Controller
             return response()->json(['error' => 'Unauthorized access to CV'], 403);
         }
 
-        // Check if file exists in storage/app/public/cvs directory
-        $filePath = storage_path('app/public/' . $cv->file_path);
+        // Handle both relative and absolute paths
+        if (str_contains($cv->file_path, storage_path(''))) {
+            // If file_path already contains the full path, use it directly
+            $filePath = $cv->file_path;
+        } else {
+            // If file_path is relative, construct the full path
+            $filePath = storage_path('app/public/' . $cv->file_path);
+        }
         
         if (!file_exists($filePath)) {
             Log::error('CV file not found', [
