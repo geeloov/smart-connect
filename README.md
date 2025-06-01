@@ -1,138 +1,75 @@
-# AI-Powered CV Extraction Tool
+# SmartConnect
 
-This application extracts structured data from CVs in PDF format using the Together AI API. It offers a beautiful, modern TailwindCSS interface and detailed JSON output with all information from the CV.
+**SmartConnect** е интелигентна платформа која ги поврзува луѓето што бараат работа со HR професионалци, користејќи напредна AI анализа за автоматска евалуација на кандидатите.
 
-## Features
+---
 
-- **PDF CV Upload**: Extract text from PDF resumes and CVs
-- **AI-Powered Extraction**: Utilize Together AI API to structure CV data into JSON
-- **Job Matching Analysis**: Compare CV with job descriptions for match scoring
-- **Complete Information Extraction**: Extracts personal details, work experience, education, skills, certifications, languages, projects, and more
-- **Structured JSON Output**: All CV data is returned in a well-organized JSON format
-- **Modern UI**: Beautiful, responsive interface using TailwindCSS
+## 🔍 Главни функционалности
 
-## Architecture
+### За кандидати:
+- Регистрација и креирање на личен профил
+- Можност за поставување неограничен број на CV-ја (во PDF формат)
+- Секое CV може да биде наменето за различна позиција
+- Аплицирање на работни позиции со избрано CV
+- Автоматска анализа на компатибилност со позицијата преку **Meta LLaMA 3.3 70B Instruct Turbo**
+- Повратна информација за степенот на соодветност со позицијата (без пристрасност)
 
-- **Frontend**: HTML, TailwindCSS, JavaScript
-- **Backend**: Python with Flask
-- **PDF Processing**: PyMuPDF for text extraction
-- **AI Processing**: Together AI SDK with Llama-3.3-70B model
+### За HR корисници:
+- Регистрација и креирање на личен профил
+- Објавување на нови работни позиции
+- Преглед на апликации од кандидати со автоматски извлечени информации од нивните CV-ја
+- Можност за додавање на CV рачно (пр. добиени преку е-пошта)
+- Управување со статус на апликации: `Прегледано`, `Интервју закажано`, `Одбиено`, `Вработен`
 
-## Requirements
+---
 
-- Python 3.7+
-- Together AI API key
-- Web browser
+## 🧠 AI Компонента
 
-## Installation
+- Користи **Meta LLaMA 3.3 70B Instruct Turbo**
+- Екстрактира и структурира податоци од PDF формат
+- Споредува CV содржина со барањата од работната позиција
+- Дава објективна и транспарентна проценка за компатибилност
 
-1. Clone this repository:
-```bash
-git clone <repository-url>
-cd cv-extraction-tool
-```
+---
 
-2. Install Python dependencies:
-```bash
-pip install -r requirements.txt
-```
+## ⚙️ Технички детали
 
-3. Set up your Together AI API key:
-```bash
-# Copy the example .env file
-cp .env.example .env
+- **Backend:** Python API (обработка на CV, AI интеграција), Laravel (целосен back-end и front-end користејќи blade views со tailwindcss)
+- **AI обработка:** Интеграција со LLaMA модел преку API
+- **Формат на документи:** PDF (задолжителен)
+- **Функции за екстракција:** автоматска анализа на текст, клучни зборови, вештини, искуство, образование
 
-# Edit the .env file and add your Together API key
-```
+---
 
-## Usage
+## 🛠️ Како функционира?
 
-1. Start the Flask application:
-```bash
-python backend/app.py
-```
+1. Кандидатот се регистрира и поставува едно или повеќе CV-ја
+2. Аплицира на избрана работна позиција со соодветно CV
+3. Python API-то го обработува документот и го праќа текстот кон AI моделот
+4. LLaMA моделот ја анализира содржината и враќа проценка
+5. Кандидатот добива повратна информација за соодветноста
+6. HR има увид во анализираните податоци и го менаџира процесот
 
-2. Open your web browser and go to:
-```
-http://localhost:5000
-```
+---
 
-3. Upload a CV in PDF format and optionally provide a job description for matching analysis.
+## 🚀 Идни подобрувања
 
-4. View the structured results with the option to see formatted data or raw JSON.
+- Автоматски parsing од LinkedIn профили
+- Интеграција со email inbox за автоматски внес на CV-ја
+- Препораки за работни позиции врз база на историја на апликации
 
-## API Endpoint
+---
 
-The application exposes the following API endpoint:
+## 👤 Автор
 
-- **POST /api/extract-cv**:
-  - Request: Multipart form data with 'cv_file' (PDF file) and optional 'job_description' (text)
-  - Response: JSON with extracted CV data and optional job matching analysis
+Овој проект е изработен како дел од дипломска работа  
+**Име и Презиме:** [Владимир Гелов]  
+**Факултет:** [Brainster Next Collage]  
+**Насока:** [Bachelor of Engineering in Information Technology - Software Engineering and Innovations]  
+**Година:** 2025
 
-## Example Response
+---
 
-```json
-{
-  "cv_data": {
-    "name": "John",
-    "surname": "Doe",
-    "fullname": "John Doe",
-    "email": "johndoe@example.com",
-    "phone": "+123456789",
-    "address": "123 Main St, New York, USA",
-    "linkedin": "https://www.linkedin.com/in/johndoe",
-    "github": "https://github.com/johndoe",
-    "website": "https://johndoe.com",
-    "summary": "Experienced software engineer with a strong background in Python and AI.",
-    "education": [
-      {
-        "degree": "MSc in Computer Science",
-        "university": "Harvard University",
-        "year": "2022"
-      }
-    ],
-    "work_experience": [
-      {
-        "job_title": "Software Engineer",
-        "company": "Google",
-        "years": "2020-2023",
-        "responsibilities": [
-          "Developed scalable web applications",
-          "Worked with Python, Django, and React"
-        ]
-      }
-    ],
-    "skills": ["Python", "JavaScript", "Machine Learning"],
-    "certifications": ["AWS Certified Developer"],
-    "languages": ["English", "German"],
-    "projects": [
-      {
-        "title": "AI Chatbot",
-        "description": "Developed an AI-powered chatbot using GPT and Django.",
-        "technologies": ["Python", "Django", "OpenAI API"]
-      }
-    ]
-  },
-  "job_matching": {
-    "match_score": 85,
-    "is_perfect_match": true,
-    "reasoning": "The candidate has 5+ years of experience in Python, matching the job requirement. Education and skills align well.",
-    "missing_criteria": []
-  }
-}
-```
+## 📄 Напомена
 
-## Together AI Integration
-
-This application uses the Together Python SDK to interact with the Together AI API. It leverages the Llama-3.3-70B-Instruct-Turbo model for CV data extraction and job matching analysis. The API key is stored in a `.env` file for security.
-
-## Notes
-
-- PDF parsing quality depends on the PDF structure. Some PDFs may not extract well if they have complex layouts or are image-based.
-- The Together AI model extracts as much information as possible from the provided text.
-- For best results, upload clearly formatted, text-based PDFs.
-- The job matching feature works best with detailed job descriptions.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details. 
+Проектот е во развојна фаза и не е наменет за продукциска употреба. Сите податоци се симулирани за целите на дипломската работа.
