@@ -63,9 +63,9 @@
 ## 👤 Автор
 
 Овој проект е изработен како дел од дипломска работа  
-**Име и Презиме:** [Владимир Гелов]  
-**Факултет:** [Brainster Next Collage]  
-**Насока:** [Bachelor of Engineering in Information Technology - Software Engineering and Innovations]  
+**Име и Презиме:** Владимир Гелов
+**Факултет:** Brainster Next Collage  
+**Насока:** Bachelor of Engineering in Information Technology - Software Engineering and Innovations  
 **Година:** 2025
 
 ---
