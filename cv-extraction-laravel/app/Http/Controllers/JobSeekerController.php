@@ -526,32 +526,66 @@ class JobSeekerController extends Controller
             return response()->json(['error' => 'Unauthorized access to CV'], 403);
         }
 
-        // Handle both relative and absolute paths
-        if (str_contains($cv->file_path, storage_path(''))) {
-            // If file_path already contains the full path, use it directly
-            $filePath = $cv->file_path;
-        } else {
-            // If file_path is relative, construct the full path
-            $filePath = storage_path('app/public/' . $cv->file_path);
+        Log::info('CV retrieval request', [
+            'cv_id' => $cv->id,
+            'file_path' => $cv->file_path,
+            'file_name' => $cv->file_name
+        ]);
+
+        // Try multiple potential file paths
+        $potentialPaths = [
+            storage_path('app/public/' . $cv->file_path),                  // Original path
+            storage_path('app/public/cvs/' . $cv->file_name),              // In cvs directory with filename
+            storage_path('app/public/job_seeker_cvs/' . $cv->file_name),   // In job_seeker_cvs directory
+            public_path('storage/' . $cv->file_path),                      // Public storage symlink
+            public_path('storage/cvs/' . $cv->file_name),                  // Public storage in cvs dir
+            public_path('storage/job_seeker_cvs/' . $cv->file_name),       // Public job_seeker_cvs dir
+        ];
+
+        $filePath = null;
+        $foundAt = null;
+
+        // Check each potential path
+        foreach ($potentialPaths as $index => $path) {
+            if (file_exists($path)) {
+                $filePath = $path;
+                $foundAt = $index;
+                break;
+            }
         }
+
+        // Log all attempted paths for debugging
+        Log::info('CV file path attempts', [
+            'attempted_paths' => $potentialPaths,
+            'found_at' => $foundAt,
+            'successful_path' => $filePath
+        ]);
         
-        if (!file_exists($filePath)) {
-            Log::error('CV file not found', [
-                'file_path' => $cv->file_path,
-                'full_path' => $filePath,
+        if (!$filePath) {
+            Log::error('CV file not found after trying multiple paths', [
                 'cv_id' => $cv->id,
-                'file_name' => $cv->file_name
+                'file_name' => $cv->file_name,
+                'attempted_paths' => $potentialPaths
             ]);
             return response()->json(['error' => 'CV file not found'], 404);
         }
 
-        // Read the file and encode as base64
-        $fileContent = base64_encode(file_get_contents($filePath));
-        
-        return response()->json([
-            'file_name' => $cv->file_name,
-            'file_content' => $fileContent,
-            'mime_type' => 'application/pdf'
-        ]);
+        try {
+            // Read the file and encode as base64
+            $fileContent = base64_encode(file_get_contents($filePath));
+            
+            return response()->json([
+                'file_name' => $cv->file_name,
+                'file_content' => $fileContent,
+                'mime_type' => 'application/pdf'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to read CV file', [
+                'cv_id' => $cv->id,
+                'file_path' => $filePath,
+                'error' => $e->getMessage()
+            ]);
+            return response()->json(['error' => 'Failed to read CV file: ' . $e->getMessage()], 500);
+        }
     }
 }

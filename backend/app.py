@@ -17,7 +17,14 @@ api_key = os.getenv('CV_EXTRACTION_API_KEY', '')
 os.environ['TOGETHER_API_KEY'] = api_key
 
 app = Flask(__name__, static_folder='../frontend', static_url_path='')
-CORS(app)  # Enable CORS for all routes
+CORS(app, resources={
+    r"/api/*": {
+        "origins": ["http://127.0.0.1:8000", "http://localhost:8000"],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization", "X-CSRF-TOKEN"],
+        "supports_credentials": True
+    }
+})
 
 # Initialize Together AI client
 together_client = Together()  # It will use TOGETHER_API_KEY from environment

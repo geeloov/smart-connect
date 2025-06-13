@@ -30,7 +30,7 @@
                 </div>
                 
                 <!-- Compact Filter Section -->
-                <form method="GET" action="{{ route('recruiter.pipeline.index') }}" id="jobPositionFilterForm" class="flex-shrink-0">
+                <form method="GET" action="{{ route('recruiter.pipeline') }}" id="jobPositionFilterForm" class="flex-shrink-0">
                     <div class="relative">
                         <label class="block text-xs font-semibold text-[#191A23] mb-1">Filter by Position</label>
                         <select name="job_position_id" id="jobPositionFilter"
@@ -56,7 +56,7 @@
     </div>
 
     <!-- Compact Kanban Board -->
-    <div id="pipelineBoard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 items-start">
+    <div id="pipelineBoard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 items-start justify-items-center">
         @php
             $stageOrder = $stageOrder ?? ['pending', 'in_review', 'interview_scheduled', 'interviewing', 'offer_extended', 'hired', 'rejected', 'withdrawn'];
             $stageUIConfig = [
@@ -143,7 +143,7 @@
                 </div>
 
                 <!-- Compact Cards Container -->
-                <div class="candidate-cards-list p-2 space-y-2 overflow-y-auto flex-grow">
+                <div class="candidate-cards-list p-2 space-y-2 flex-grow">
                     @forelse($applicationsInStage as $application)
                         @php
                             $userNameForAvatar = $application->user->name ?? 'Unknown';
@@ -226,13 +226,13 @@
                         </div>
                     @empty
                         <!-- Compact Empty State -->
-                        <div class="kanban-card-placeholder-dynamic flex items-center justify-center h-32">
-                            <div class="text-center p-4 border border-dashed border-gray-200 rounded-lg bg-white/60 backdrop-blur-sm w-full">
-                                <div class="text-lg mb-1">{{ $config['emoji'] }}</div>
-                                <svg class="mx-auto h-6 w-6 text-gray-300 mb-1" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                        <div class="kanban-card-placeholder-dynamic">
+                            <div class="text-center border border-dashed border-gray-200 rounded-lg bg-white shadow-sm hover:border-[#B9FF66] transition-all duration-300">
+                                <div class="text-lg mb-2">{{ $config['emoji'] }}</div>
+                                <svg class="mx-auto h-6 w-6 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                                 </svg>
-                                <h3 class="text-xs font-semibold text-gray-600 mb-1">No candidates</h3>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-2">No candidates</h3>
                                 <p class="text-xs text-gray-500">Drag here to update status</p>
                             </div>
                         </div>
@@ -248,23 +248,53 @@
 
 @push('styles')
 <style>
-    .candidate-cards-list::-webkit-scrollbar {
-        width: 4px;
-    }
-    .candidate-cards-list::-webkit-scrollbar-track {
-        background-color: rgba(0, 0, 0, 0.05);
-        border-radius: 10px;
-    }
-    .candidate-cards-list::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, #B9FF66, #a7e85c);
-        border-radius: 10px;
-    }
-    .candidate-cards-list::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, #a7e85c, #96d84b);
-    }
-/* Dynamic column heights based on content */
+/* Columns and card list styling */
     .candidate-cards-list {
         min-height: 120px;
+        height: auto;
+        width: 100%;
+        max-width: 280px;
+    }
+    
+    .kanban-stage-column {
+        width: 100%;
+        max-width: 280px;
+        height: fit-content;
+    }
+    
+    .kanban-card {
+        width: 100%;
+        max-width: 260px;
+    }
+    
+    /* Fixed consistent size for empty placeholder cards */
+    .kanban-card-placeholder-dynamic {
+        width: 100%;
+        max-width: 260px;
+        height: 174px;
+        display: flex !important; /* Always show placeholder for empty columns */
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Inner content of placeholder cards */
+    .kanban-card-placeholder-dynamic > div {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+        box-shadow: 0px 1px 0px 0px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    /* Add hover effects similar to cards */
+    .kanban-card-placeholder-dynamic > div:hover {
+        border-color: #B9FF66;
+        box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+        transform: translateY(-1px);
     }
     
     .kanban-stage-column {
@@ -337,6 +367,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const pipelineBoard = document.getElementById('pipelineBoard');
     let draggedCard = null;
     let originalStageId = null;
+    
+    // Initialize placeholders visibility on page load
+    initializePlaceholders();
 
     // Enhanced drag start
     pipelineBoard.addEventListener('dragstart', e => {
@@ -408,11 +441,38 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (newStageId && newStageId !== originalStageId) {
                 const targetCardList = targetColumnElement.querySelector('.candidate-cards-list');
+                const sourceColumnElement = pipelineBoard.querySelector(`.kanban-stage-column[data-stage-id="${originalStageId}"]`);
+                const sourceCardList = sourceColumnElement.querySelector('.candidate-cards-list');
+                
+                // Move the card to the target column
                 targetCardList.appendChild(draggedCard);
 
+                // Hide the "No candidates" placeholder in the target column
+                const targetPlaceholder = targetColumnElement.querySelector('.kanban-card-placeholder-dynamic');
+                if (targetPlaceholder) {
+                    targetPlaceholder.style.display = 'none';
+                }
+                
+                // CORE LOGIC: Show the "No candidates" placeholder in the source column if it's now empty
+                const remainingCardsInSource = sourceCardList.querySelectorAll('.kanban-card').length;
+                console.log(`Source column ${originalStageId} now has ${remainingCardsInSource} cards`);
+                
+                if (remainingCardsInSource === 0) {
+                    const sourcePlaceholder = sourceColumnElement.querySelector('.kanban-card-placeholder-dynamic');
+                    if (sourcePlaceholder) {
+                        console.log(`Setting placeholder for empty ${originalStageId} column to VISIBLE`);
+                        sourcePlaceholder.style.display = 'flex';
+                    } else {
+                        console.error(`Source column ${originalStageId} has no cards but also no placeholder!`);
+                    }
+                }
+                
                 // Update UI immediately
                 updateCardCounts();
                 draggedCard.dataset.originalStage = newStageId;
+                
+                // Make sure all placeholders are correct immediately after drag operation
+                ensureCorrectPlaceholders();
 
                 // Show success animation
                 draggedCard.classList.add('pulse-glow');
@@ -445,16 +505,58 @@ document.addEventListener('DOMContentLoaded', function () {
                     console.log('Stage update successful:', data.message);
                     // Show success notification
                     showNotification('Candidate moved successfully!', 'success');
+                    
+                    // Force UI refresh to ensure complete consistency
+                    setTimeout(() => {
+                        // Update counts first
+                        updateCardCounts();
+                        
+                        // Now use our dedicated function to make sure all placeholders are correct
+                        console.log("AJAX SUCCESS: Using ensureCorrectPlaceholders to fix all columns");
+                        ensureCorrectPlaceholders();
+                    }, 100);
                 })
                 .catch(error => {
                     console.error('Error updating stage:', error);
                     // Revert the card
                     const originalColumnElement = pipelineBoard.querySelector(`.kanban-stage-column[data-stage-id="${originalStageId}"]`);
+                    const targetColumnElement = pipelineBoard.querySelector(`.kanban-stage-column[data-stage-id="${newStageId}"]`);
+                    
                     if (originalColumnElement) {
                         const originalCardList = originalColumnElement.querySelector('.candidate-cards-list');
                         originalCardList.appendChild(draggedCard);
                         draggedCard.dataset.originalStage = originalStageId;
+                        
+                        // Hide the "No candidates" placeholder in the original column since we're putting the card back
+                        const originalPlaceholder = originalColumnElement.querySelector('.kanban-card-placeholder-dynamic');
+                        if (originalPlaceholder) {
+                            console.log(`Error recovery: Hiding placeholder in ${originalStageId} as card is returning`);
+                            originalPlaceholder.style.display = 'none';
+                        }
+                        
+                        // Show the "No candidates" placeholder in the target column if it's now empty
+                        if (targetColumnElement) {
+                            const targetCardList = targetColumnElement.querySelector('.candidate-cards-list');
+                            const remainingCardsInTarget = targetCardList.querySelectorAll('.kanban-card').length;
+                            if (remainingCardsInTarget === 0) {
+                                const targetPlaceholder = targetColumnElement.querySelector('.kanban-card-placeholder-dynamic');
+                                if (targetPlaceholder) {
+                                    console.log(`Error recovery: Showing placeholder in now-empty ${newStageId} column`);
+                                    targetPlaceholder.style.display = 'flex';
+                                    
+                                    // Extra focus on withdrawn column
+                                    if (newStageId === 'withdrawn') {
+                                        console.log(`SPECIAL ATTENTION: Withdrawn column is empty during error recovery`);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Use our dedicated function to fix all placeholders after error recovery
+                        console.log("ERROR RECOVERY: Using ensureCorrectPlaceholders to fix all columns");
+                        ensureCorrectPlaceholders();
                     }
+                    
                     updateCardCounts();
                     showNotification('Error moving candidate: ' + error.message, 'error');
                 });
@@ -479,6 +581,15 @@ document.addEventListener('DOMContentLoaded', function () {
             if (subtitleElement) {
                 subtitleElement.textContent = `${count} ${count === 1 ? 'candidate' : 'candidates'}`;
             }
+            
+            // Fix header count display and force reflow/repaint
+            const stageHeaderCount = column.querySelector('h2').parentElement.parentElement.querySelector('.bg-white\\/20 span');
+            if (stageHeaderCount) {
+                stageHeaderCount.textContent = count;
+                
+                // Force a reflow to ensure the UI updates
+                void column.offsetWidth;
+            }
         });
     }
 
@@ -499,9 +610,56 @@ document.addEventListener('DOMContentLoaded', function () {
             }, 300);
         }, 3000);
     }
+    
+    // Initialize placeholder visibility based on whether there are cards in each column
+    // Function to check and fix all placeholders across the board
+    function ensureCorrectPlaceholders() {
+        console.log("ENSURING ALL PLACEHOLDERS ARE CORRECT");
+        document.querySelectorAll('.kanban-stage-column').forEach(column => {
+            const stageId = column.dataset.stageId || 'unknown';
+            const cardList = column.querySelector('.candidate-cards-list');
+            if (!cardList) return;
+            
+            const cards = cardList.querySelectorAll('.kanban-card');
+            const count = cards.length;
+            const placeholder = column.querySelector('.kanban-card-placeholder-dynamic');
+            
+            // Log the state of each column
+            console.log(`Column ${stageId}: ${count} cards, has placeholder: ${!!placeholder}`);
+            
+            if (placeholder) {
+                if (count === 0) {
+                    // Empty column - SHOW PLACEHOLDER
+                    console.log(`Ensuring placeholder is VISIBLE for empty column ${stageId}`);
+                    placeholder.style.display = 'flex';
+                    
+                    // Special attention for known problematic columns
+                    if (stageId === 'withdrawn') {
+                        console.log(`FOCUS: Fixing withdrawn column placeholder`);
+                    }
+                } else {
+                    // Column has cards - HIDE PLACEHOLDER
+                    placeholder.style.display = 'none';
+                }
+            }
+        });
+    }
 
-    // Initial setup
-    updateCardCounts();
+    // Simple initialization function
+    function initializePlaceholders() {
+        updateCardCounts();
+        ensureCorrectPlaceholders();
+    }
+
+    // Initialize all columns
+    initializePlaceholders();
+    
+    // Add an extra check after everything has loaded
+    // This ensures all placeholders are correctly shown/hidden, especially for the withdrawn column
+    setTimeout(() => {
+        console.log("FINAL CHECK: Ensuring all placeholders are in correct state");
+        ensureCorrectPlaceholders();
+    }, 1000);
 });
 </script>
 @endpush
