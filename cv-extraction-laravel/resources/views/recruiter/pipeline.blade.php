@@ -4,21 +4,12 @@
 <div class="min-h-screen p-4 sm:p-6 lg:p-8">
     <!-- Compact Header Section -->
     <div class="mb-6">
-        <div class="bg-white rounded-2xl border-2 border-[#191A23] p-4 md:p-6 relative overflow-hidden" style="box-shadow: 0px 6px 0px 0 #191a23;">
+        <div class="bg-white rounded-2xl border-2 border-gray-200 p-4 md:p-6 relative overflow-hidden shadow-xl">
             <!-- Background Pattern -->
-            <div class="absolute top-0 right-0 -mt-6 -mr-6 opacity-5">
-                <svg width="150" height="150" viewBox="0 0 150 150" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="75" cy="75" r="75" fill="#191A23"/>
-                    <circle cx="75" cy="75" r="60" fill="white"/>
-                    <circle cx="75" cy="75" r="45" fill="#191A23"/>
-                    <circle cx="75" cy="75" r="30" fill="white"/>
-                    <circle cx="75" cy="75" r="15" fill="#191A23"/>
-                </svg>
-            </div>
             
             <div class="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div class="flex items-center space-x-3">
-                    <div class="p-3 bg-[#B9FF66] rounded-xl border-2 border-[#191A23]" style="box-shadow: 0px 3px 0px 0 #191a23;">
+                    <div class="p-3 bg-[#B9FF66] rounded-xl border-2 border-[#191A23] shadow-md">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-[#191A23]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
                         </svg>
@@ -34,8 +25,7 @@
                     <div class="relative">
                         <label class="block text-xs font-semibold text-[#191A23] mb-1">Filter by Position</label>
                         <select name="job_position_id" id="jobPositionFilter"
-                                class="block w-full md:w-64 appearance-none rounded-lg border-2 border-[#191A23] bg-white px-3 py-2 pr-10 text-sm font-medium text-[#191A23] focus:border-[#B9FF66] focus:outline-none focus:ring-2 focus:ring-[#B9FF66]/50 transition-all duration-200"
-                                style="box-shadow: 0px 3px 0px 0px #191A23;"
+                                class="block w-full md:w-64 appearance-none rounded-lg border border-gray-300 bg-white px-3 py-2 pr-10 text-sm font-medium text-[#191A23] focus:border-[#B9FF66] focus:outline-none focus:ring-2 focus:ring-[#B9FF66]/50 transition-all duration-200 shadow-sm"
                                 onchange="document.getElementById('jobPositionFilterForm').submit();">
                             <option value="" class="font-medium">🎯 All Job Positions</option>
                             @foreach($jobPositions as $job)
@@ -58,7 +48,7 @@
     <!-- Compact Kanban Board -->
     <div id="pipelineBoard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 items-start justify-items-center">
         @php
-            $stageOrder = $stageOrder ?? ['pending', 'in_review', 'interview_scheduled', 'interviewing', 'offer_extended', 'hired', 'rejected', 'withdrawn'];
+            $stageOrder = $stageOrder ?? ['pending', 'in_review', 'shortlisted', 'interview_scheduled', 'interviewing', 'technical_test', 'offer_extended', 'offer_accepted', 'hired', 'rejected', 'offer_declined', 'withdrawn', 'on_hold'];
             $stageUIConfig = [
                 'pending' => [
                     'gradient' => 'from-slate-400 to-slate-600',
@@ -72,6 +62,12 @@
                     'border' => 'border-blue-400',
                     'emoji' => '👀'
                 ],
+                'shortlisted' => [
+                    'gradient' => 'from-green-400 to-green-600',
+                    'bg' => 'bg-green-50',
+                    'border' => 'border-green-200',
+                    'emoji' => '✨'
+                ],
                 'interview_scheduled' => [
                     'gradient' => 'from-cyan-400 to-cyan-600',
                     'bg' => 'bg-cyan-50',
@@ -84,11 +80,23 @@
                     'border' => 'border-amber-200',
                     'emoji' => '🎤'
                 ],
+                'technical_test' => [
+                    'gradient' => 'from-purple-400 to-purple-600',
+                    'bg' => 'bg-purple-50',
+                    'border' => 'border-purple-200',
+                    'emoji' => '💻'
+                ],
                 'offer_extended' => [
                     'gradient' => 'from-purple-400 to-purple-600',
                     'bg' => 'bg-purple-50',
                     'border' => 'border-purple-200',
                     'emoji' => '💼'
+                ],
+                'offer_accepted' => [
+                    'gradient' => 'from-lime-400 to-lime-600',
+                    'bg' => 'bg-lime-50',
+                    'border' => 'border-lime-200',
+                    'emoji' => '🤝'
                 ],
                 'hired' => [
                     'gradient' => 'from-emerald-400 to-emerald-600',
@@ -102,11 +110,23 @@
                     'border' => 'border-red-200',
                     'emoji' => '❌'
                 ],
+                'offer_declined' => [
+                    'gradient' => 'from-orange-400 to-orange-600',
+                    'bg' => 'bg-orange-50',
+                    'border' => 'border-orange-200',
+                    'emoji' => '👎'
+                ],
                 'withdrawn' => [
                     'gradient' => 'from-orange-400 to-orange-600',
                     'bg' => 'bg-orange-50',
                     'border' => 'border-orange-200',
                     'emoji' => '🚪'
+                ],
+                'on_hold' => [
+                    'gradient' => 'from-gray-400 to-gray-600',
+                    'bg' => 'bg-gray-50',
+                    'border' => 'border-gray-200',
+                    'emoji' => '⏸️'
                 ]
             ];
             $avatarColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9'];
@@ -120,13 +140,13 @@
                 $config = $stageUIConfig[$statusKey] ?? $stageUIConfig['pending'];
             @endphp
             
-            <div class="kanban-stage-column flex flex-col {{ $config['bg'] }} rounded-xl border-2 {{ $config['border'] }} overflow-hidden transition-all duration-300 hover:shadow-lg" 
+            <div class="kanban-stage-column flex flex-col {{ $config['bg'] }} rounded-xl border-2 {{ $config['border'] }} overflow-hidden transition-all duration-300 hover:shadow-lg shadow-md" 
                  data-stage-id="{{ $statusKey }}" 
                  data-stage-ui-config="{{ json_encode($config) }}" 
-                 style="box-shadow: 0px 3px 0px 0px rgba(0,0,0,0.08);">
+                 >
                 
                 <!-- Compact Stage Header -->
-                <div class="px-3 py-2 bg-gradient-to-r {{ $config['gradient'] }} text-white relative overflow-hidden">
+                <div class="px-2 py-1.5 bg-gradient-to-r {{ $config['gradient'] }} text-white relative overflow-hidden">
                     <div class="absolute inset-0 bg-black/10"></div>
                     <div class="relative z-10 flex justify-between items-center">
                         <div class="flex items-center space-x-2">
@@ -143,7 +163,7 @@
                 </div>
 
                 <!-- Compact Cards Container -->
-                <div class="candidate-cards-list p-2 space-y-2 flex-grow">
+                <div class="candidate-cards-list p-1 space-y-1 flex-grow">
                     @forelse($applicationsInStage as $application)
                         @php
                             $userNameForAvatar = $application->user->name ?? 'Unknown';
@@ -152,14 +172,14 @@
                             $avatarBg = $avatarColors[$colorIndex];
                         @endphp
                         
-                        <div class="kanban-card bg-white rounded-lg border border-gray-200 hover:border-[#B9FF66] p-2 transition-all duration-300 cursor-grab active:cursor-grabbing group hover:shadow-md hover:-translate-y-0.5 transform"
+                        <div class="kanban-card bg-white rounded-lg border border-gray-200 hover:border-[#B9FF66] p-2 transition-all duration-300 cursor-grab active:cursor-grabbing group hover:shadow-md hover:-translate-y-0.5 transform shadow-sm"
                              draggable="true" data-application-id="{{ $application->id }}" data-original-stage="{{ $statusKey }}"
-                             style="box-shadow: 0px 1px 0px 0px rgba(0,0,0,0.05);">
+                             >
                             
                             <!-- Compact Card Header -->
-                            <div class="flex items-center space-x-2 mb-1.5">
+                            <div class="flex items-center space-x-2 mb-1">
                                 <div class="relative">
-                                    <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm border border-white" style="background: linear-gradient(135deg, {{ $avatarBg }}, {{ $avatarBg }}dd);">
+                                    <div class="w-6 h-6 rounded-lg flex items-center justify-center text-white text-xs font-bold shadow-sm border border-white" style="background: linear-gradient(135deg, {{ $avatarBg }}, {{ $avatarBg }}dd);">
                                         {{ $initials }}
                                     </div>
                                     <div class="absolute -bottom-0.5 -right-0.5 w-2 h-2 bg-green-400 rounded-full border border-white"></div>
@@ -169,20 +189,20 @@
                                         {{ $application->user->name ?? 'Unknown Candidate' }}
                                     </h3>
                                     @if($application->jobPosition)
-                                    <p class="text-xs text-gray-600 truncate" title="{{ $application->jobPosition->title }}">
-                                        {{ Str::limit($application->jobPosition->title, 20) }}
+                                    <p class="text-[0.65rem] text-gray-600 truncate" title="{{ $application->jobPosition->title }}">
+                                        {{ Str::limit($application->jobPosition->title, 20) }} 
                                     </p>
                                     @endif
                                 </div>
                             </div>
                             
                             <!-- Compact Application Info -->
-                            <div class="space-y-1.5 mb-1.5">
+                            <div class="space-y-1 mb-1">
                                 <div class="flex items-center text-xs text-gray-500">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    {{ $application->created_at->diffForHumans() }}
+                                    <span class="text-[0.65rem]">{{ $application->created_at->diffForHumans() }}</span>
                                 </div>
 
                                 @if(!is_null($application->compatibility_score))
@@ -199,7 +219,7 @@
                                             <div class="w-10 h-1 bg-gray-200 rounded-full overflow-hidden">
                                                 <div class="h-full bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 rounded-full transition-all duration-500" style="width: {{ $score }}%"></div>
                                             </div>
-                                            <span class="inline-flex items-center px-1 py-0.5 rounded text-xs font-bold border {{ $scoreColor }}">
+                                            <span class="inline-flex items-center px-1 py-0.5 rounded text-[0.65rem] font-bold border {{ $scoreColor }}">
                                                 {{ $score }}%
                                             </span>
                                         </div>
@@ -214,8 +234,8 @@
                                     <span class="text-xs text-gray-500 font-medium">Active</span>
                                 </div>
                                 <a href="{{ route('recruiter.applications.show', $application->id) }}" 
-                                   class="inline-flex items-center px-2 py-1 bg-[#191A23] text-white text-xs font-semibold rounded hover:bg-[#B9FF66] hover:text-[#191A23] transition-all duration-200 transform hover:scale-105"
-                                   style="box-shadow: 0px 1px 0px 0 rgba(0,0,0,0.1);">
+                                   class="inline-flex items-center px-1.5 py-0.5 bg-[#191A23] text-white text-[0.65rem] font-semibold rounded hover:bg-[#B9FF66] hover:text-[#191A23] transition-all duration-200 transform hover:scale-105 shadow-sm"
+                                   >
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -227,13 +247,13 @@
                     @empty
                         <!-- Compact Empty State -->
                         <div class="kanban-card-placeholder-dynamic">
-                            <div class="text-center border border-dashed border-gray-200 rounded-lg bg-white shadow-sm hover:border-[#B9FF66] transition-all duration-300">
-                                <div class="text-lg mb-2">{{ $config['emoji'] }}</div>
-                                <svg class="mx-auto h-6 w-6 text-gray-300 mb-3" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                            <div class="text-center border border-dashed border-gray-200 rounded-lg bg-white shadow-sm hover:border-[#B9FF66] transition-all duration-300 p-2">
+                                <div class="text-lg mb-1">{{ $config['emoji'] }}</div>
+                                <svg class="mx-auto h-5 w-5 text-gray-300 mb-1" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m6.75 12H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                                 </svg>
-                                <h3 class="text-xs font-semibold text-gray-600 mb-2">No candidates</h3>
-                                <p class="text-xs text-gray-500">Drag here to update status</p>
+                                <h3 class="text-xs font-semibold text-gray-600 mb-0.5">No candidates</h3>
+                                <p class="text-[0.65rem] text-gray-500">Drag here to update status</p>
                             </div>
                         </div>
                     @endforelse
@@ -243,17 +263,14 @@
     </div>
 </div>
 
-<!-- Include Chatbot Component -->
-@include('components.chatbot')
-
 @push('styles')
 <style>
 /* Columns and card list styling */
     .candidate-cards-list {
-        min-height: 120px;
+        min-height: 0px;
         height: auto;
         width: 100%;
-        max-width: 280px;
+        max-width: 250px;
     }
     
     .kanban-stage-column {
@@ -264,15 +281,15 @@
     
     .kanban-card {
         width: 100%;
-        max-width: 260px;
+        max-width: 250px;
     }
     
     /* Fixed consistent size for empty placeholder cards */
     .kanban-card-placeholder-dynamic {
         width: 100%;
-        max-width: 260px;
-        height: 174px;
-        display: flex !important; /* Always show placeholder for empty columns */
+        max-width: 250px;
+        height: 140px; /* Adjusted height for more compactness */
+        display: flex;
         align-items: center;
         justify-content: center;
     }
@@ -285,16 +302,15 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 1rem;
-        box-shadow: 0px 1px 0px 0px rgba(0,0,0,0.05);
+        padding: 0.75rem; /* Adjusted padding */
         transition: all 0.3s ease;
     }
     
     /* Add hover effects similar to cards */
     .kanban-card-placeholder-dynamic > div:hover {
         border-color: #B9FF66;
-        box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
         transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* This is actually `shadow-md` */
     }
     
     .kanban-stage-column {
@@ -304,14 +320,15 @@
     .kanban-stage-column.drag-over {
         background: linear-gradient(135deg, rgba(185, 255, 102, 0.1), rgba(185, 255, 102, 0.2));
         transform: scale(1.02);
-        box-shadow: 0px 8px 0px 0px rgba(185, 255, 102, 0.3), 0 15px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1), 0 0 0 2px rgba(185, 255, 102, 0.5); /* Replaced with a more modern shadow */
 /* Ensure border colors are properly applied */
     .kanban-stage-column {
-        border-width: 2px !important;
+        border-width: 2px;
     }
     
     /* Force specific border colors for each stage */
-    .kanban-stage-column[data-stage-id="in_review"] {
+    /* Removed specific border color overrides to allow dynamic colors to apply */
+    /* .kanban-stage-column[data-stage-id="in_review"] {
         border-color: rgb(191 219 254) !important; /* blue-200 */
     }
     
@@ -341,12 +358,12 @@
     
     .kanban-stage-column[data-stage-id="withdrawn"] {
         border-color: rgb(254 215 170) !important; /* orange-200 */
-    }
+    } */
     }
     
     .kanban-card.dragging {
         transform: rotate(3deg) scale(1.05);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.2); /* Replaced with a more pronounced, but sleek shadow */
         z-index: 1000;
     }
     
@@ -357,6 +374,11 @@
     
     .pulse-glow {
         animation: pulse-glow 2s infinite;
+    }
+
+    /* Added for consistent notification styling */
+    .notification {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 </style>
 @endpush
@@ -595,10 +617,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
-        notification.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg text-white font-semibold transform transition-all duration-300 ${
+        notification.className = `fixed top-4 right-4 z-50 px-4 py-2 rounded-lg text-white font-semibold transform transition-all duration-300 notification ${ 
             type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'
         }`;
-        notification.style.boxShadow = '0px 2px 0px 0 rgba(0,0,0,0.2)';
+        
         notification.textContent = message;
         
         document.body.appendChild(notification);

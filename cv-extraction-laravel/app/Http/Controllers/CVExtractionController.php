@@ -35,6 +35,13 @@ class CVExtractionController extends Controller
         $request->validate([
             'cv_file' => 'required|file|mimes:pdf|max:10240', // 10MB max
             'job_position_id' => 'required|exists:job_positions,id' // Updated validation
+        ], [
+            'cv_file.required' => 'Please upload a CV file.',
+            'cv_file.file' => 'The uploaded file is not valid.',
+            'cv_file.mimes' => 'The CV file must be a PDF.',
+            'cv_file.max' => 'The CV file size cannot exceed 10MB.',
+            'job_position_id.required' => 'A job position must be selected.',
+            'job_position_id.exists' => 'The selected job position is invalid.'
         ]);
         
         try {
@@ -44,7 +51,11 @@ class CVExtractionController extends Controller
             // Verify the job position belongs to the current recruiter
             $jobPosition = JobPosition::where('id', $request->job_position_id)
                 ->where('user_id', Auth::id())
-                ->firstOrFail();
+                ->first(); // Use first() instead of firstOrFail() to handle custom error
+            
+            if (!$jobPosition) {
+                return back()->with('error', 'The selected job position could not be found or you do not have permission to access it.');
+            }
             
             // Step 1: Extract CV data
             $extractedData = $this->extract($request);
@@ -70,6 +81,7 @@ class CVExtractionController extends Controller
                     'error' => $matchingResults['error'] ?? 'Unknown error',
                     'reasoning' => $matchingResults['reasoning'] ?? 'No reasoning provided'
                 ]);
+                $matchingError = $matchingResults['reasoning'] ?? 'Failed to match CV with job description. Please try again or ensure the job description is clear.';
             }
             
             // Combine the results
@@ -84,12 +96,15 @@ class CVExtractionController extends Controller
             // Pass the extracted data to the view
             return view('cv-extraction.result', $result);
             
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Re-throw validation exceptions so they are handled by Laravel's default error handler
+            throw $e;
         } catch (\Exception $e) {
             Log::error('CV processing failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return back()->with('error', 'Error: ' . $e->getMessage());
+            return back()->with('error', 'An unexpected error occurred during CV processing. Please try again. If the problem persists, contact support.');
         }
     }
 
@@ -132,7 +147,8 @@ class CVExtractionController extends Controller
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
-                return back()->with('error', 'API Error (' . $response->status() . '): ' . $response->body());
+                // Provide a more user-friendly error message for API failures
+                return back()->with('error', 'Failed to extract CV data from the analysis service. Please try again. Error details: ' . $response->status() . ' - ' . substr($response->body(), 0, 100) . '...');
             }
             
             // Get the API response data
@@ -159,7 +175,8 @@ class CVExtractionController extends Controller
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ]);
-            throw $e;
+            // Rethrow the exception after logging for upstream handling in the 'process' method
+            throw new \Exception('Error communicating with the CV extraction service. Please ensure the service is running and try again.', 0, $e);
         }
     }
 
@@ -194,12 +211,12 @@ class CVExtractionController extends Controller
                     'body' => $response->body()
                 ]);
                 
-                // Return a properly structured error response
+                // Return a properly structured error response with a more user-friendly message
                 return [
                     'success' => false,
                     'match_score' => 0,
                     'is_perfect_match' => false,
-                    'reasoning' => 'The CV extraction service encountered an error. Status: ' . $response->status(),
+                    'reasoning' => 'The job matching service encountered an error. Status: ' . $response->status() . '. Please ensure the service is running and try again.',
                     'skills_analysis' => [
                         'matched_skills' => [],
                         'missing_skills' => []
@@ -252,48 +269,17 @@ class CVExtractionController extends Controller
                 if (isset($jobMatching['education_analysis'])) {
                     $result['education_analysis'] = $jobMatching['education_analysis'];
                 }
-            } 
-            // For backward compatibility and legacy response formats
-            else if (isset($matchingData['match_score']) || isset($matchingData['reasoning'])) {
-                Log::info('Job matching using direct format', ['data_keys' => array_keys($matchingData)]);
-                
-                // Map direct fields
-                $result['match_score'] = $matchingData['match_score'] ?? 0;
-                $result['is_perfect_match'] = $matchingData['is_perfect_match'] ?? false;
-                $result['reasoning'] = $matchingData['reasoning'] ?? 'No analysis provided.';
-                
-                // Handle different skills analysis structures
-                if (isset($matchingData['skills_analysis'])) {
-                    if (isset($matchingData['skills_analysis']['matched_skills'])) {
-                        $result['skills_analysis']['matched_skills'] = $matchingData['skills_analysis']['matched_skills'];
-                    }
-                    
-                    if (isset($matchingData['skills_analysis']['missing_skills'])) {
-                        $result['skills_analysis']['missing_skills'] = $matchingData['skills_analysis']['missing_skills'];
-                    }
-                } else if (isset($matchingData['skills'])) {
-                    // Alternative structure with a 'skills' key
-                    if (isset($matchingData['skills']['matched'])) {
-                        $result['skills_analysis']['matched_skills'] = $matchingData['skills']['matched'];
-                    }
-                    
-                    if (isset($matchingData['skills']['missing'])) {
-                        $result['skills_analysis']['missing_skills'] = $matchingData['skills']['missing'];
-                    }
-                }
-                
-                // Map experience and education if available
-                if (isset($matchingData['experience_analysis'])) {
-                    $result['experience_analysis'] = $matchingData['experience_analysis'];
-                }
-                
-                if (isset($matchingData['education_analysis'])) {
-                    $result['education_analysis'] = $matchingData['education_analysis'];
+
+                // If job_matching is empty or malformed
+                if (empty($jobMatching) || !is_array($jobMatching)) {
+                    Log::warning('Job matching API response malformed or empty', ['api_response' => $matchingData]);
+                    $result['success'] = false;
+                    $result['reasoning'] = 'The job matching service returned an unexpected or empty response.';
                 }
             } else {
-                Log::warning('Unexpected API response format', [
-                    'data_keys' => is_array($matchingData) ? array_keys($matchingData) : 'not an array'
-                ]);
+                Log::warning('Job matching key not found in API response', ['api_response' => $matchingData]);
+                $result['success'] = false;
+                $result['reasoning'] = 'The job matching service did not return expected data format.';
             }
             
             // Ensure match_score is numeric
@@ -306,14 +292,15 @@ class CVExtractionController extends Controller
         } catch (\Exception $e) {
             Log::error('Job matching exception', [
                 'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
-            
+            // Return a structured error response for exceptions during matching
             return [
                 'success' => false,
                 'match_score' => 0,
                 'is_perfect_match' => false,
-                'reasoning' => 'An error occurred during the matching process: ' . $e->getMessage(),
+                'reasoning' => 'An error occurred while communicating with the job matching service. Please try again. Error: ' . $e->getMessage(),
                 'skills_analysis' => [
                     'matched_skills' => [],
                     'missing_skills' => []
@@ -522,60 +509,108 @@ class CVExtractionController extends Controller
     }
 
     /**
-     * Check compatibility score between a CV and job description
+     * Check compatibility score between a given CV and a job position
+     * This method is called via AJAX from the frontend.
      */
     public function checkCompatibilityScore(Request $request)
     {
         $request->validate([
-            'cv_file' => 'required|mimes:pdf|max:10240', // 10MB max
-            'job_description' => 'required|string|max:50000',
+            'cv_id' => 'required|exists:job_seeker_cvs,id',
+            'job_position_id' => 'required|exists:job_positions,id',
+        ], [
+            'cv_id.required' => 'The CV is required for compatibility check.',
+            'cv_id.exists' => 'The selected CV is invalid or does not exist.',
+            'job_position_id.required' => 'The job position is required for compatibility check.',
+            'job_position_id.exists' => 'The selected job position is invalid or does not exist.'
         ]);
-        
+
         try {
-            // Log sending CV to extraction API
-            $apiUrl = config('services.cv_extraction.api_url', 'http://localhost:5000/api/check-compatibility-score');
-            Log::info('Checking compatibility score with API', [
-                'api_url' => $apiUrl,
-                'file_name' => $request->file('cv_file')->getClientOriginalName(),
-                'file_size' => $request->file('cv_file')->getSize()
-            ]);
-            
-            // Send CV to extraction API
-            $response = Http::withHeaders([
-                'Accept' => 'application/json',
-            ])->attach(
-                'cv_file', 
-                file_get_contents($request->file('cv_file')->path()), 
-                $request->file('cv_file')->getClientOriginalName()
-            )->post($apiUrl, [
-                'job_description' => $request->job_description,
-            ]);
-            
-            // Check if request was successful
-            if ($response->successful()) {
-                $data = $response->json();
-                Log::info('Compatibility score check successful', [
-                    'compatibility_score' => $data['compatibility_score'] ?? 'Not available'
-                ]);
-                
-                return response()->json($data);
-            } else {
-                Log::error('Compatibility score check failed', [
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-                
+            // Retrieve the CV content
+            $cvContent = null;
+            $jobSeekerCv = \App\Models\JobSeekerCV::find($request->cv_id);
+
+            if (!$jobSeekerCv || $jobSeekerCv->user_id !== Auth::id()) {
                 return response()->json([
-                    'error' => 'Failed to check compatibility score: ' . $response->body()
+                    'success' => false,
+                    'error' => 'The selected CV could not be found or you do not have permission to access it.'
+                ], 403); // Forbidden
+            }
+            
+            // Assuming getCVContent method exists on JobSeekerController and returns the actual CV content
+            // Need to instantiate JobSeekerController or move this logic
+            // For now, let's assume we can directly access the file or content from the JobSeekerCV model
+            // This is a placeholder, as fetching the CV content might involve file storage or database retrieval
+            // For a robust solution, consider a dedicated service or method to safely retrieve CV content.
+            // Example:
+            $cvFilePath = storage_path('app/' . $jobSeekerCv->file_path);
+            if (!file_exists($cvFilePath)) {
+                 return response()->json([
+                    'success' => false,
+                    'error' => 'The CV file could not be found on the server.'
+                ], 404);
+            }
+            // Temporarily create a dummy file object for consistency with matchWithJob
+            // In a real scenario, you'd ensure matchWithJob can accept a file path or content directly
+            $tempFile = new \Illuminate\Http\UploadedFile(
+                $cvFilePath,
+                basename($jobSeekerCv->file_path),
+                mime_content_type($cvFilePath),
+                null,
+                true // for test
+            );
+
+
+            // Retrieve the Job Position description
+            $jobPosition = \App\Models\JobPosition::find($request->job_position_id);
+
+            if (!$jobPosition) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'The selected job position could not be found.'
+                ], 404);
+            }
+
+            // Call the matchWithJob function, passing the file and job description
+            // The matchWithJob function expects an UploadedFile object for the CV
+            $matchingResults = $this->matchWithJob($tempFile, $jobPosition->description);
+
+            if ($matchingResults['success']) {
+                // Optionally save the compatibility score
+                // Example:
+                // $compatibility = new JobCompatibility();
+                // $compatibility->job_seeker_cv_id = $request->cv_id;
+                // $compatibility->job_position_id = $request->job_position_id;
+                // $compatibility->score = $matchingResults['match_score'];
+                // $compatibility->save();
+
+                return response()->json([
+                    'success' => true,
+                    'match_score' => $matchingResults['match_score'],
+                    'reasoning' => $matchingResults['reasoning'],
+                    'skills_analysis' => $matchingResults['skills_analysis']
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'error' => $matchingResults['reasoning'] ?? 'Failed to calculate compatibility score.',
+                    'details' => $matchingResults // Pass full details for debugging, but user sees 'error'
                 ], 500);
             }
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Validation failed: ' . $e->getMessage(),
+                'details' => $e->errors()
+            ], 422); // Unprocessable Entity
         } catch (\Exception $e) {
-            Log::error('Error checking compatibility score: ' . $e->getMessage(), [
+            Log::error('Error checking compatibility score', [
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
             return response()->json([
-                'error' => 'Error checking compatibility score: ' . $e->getMessage()
+                'success' => false,
+                'error' => 'An unexpected error occurred while checking compatibility. Please try again. If the problem persists, contact support.'
             ], 500);
         }
     }

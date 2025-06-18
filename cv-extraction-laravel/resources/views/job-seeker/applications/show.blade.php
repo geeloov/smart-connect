@@ -97,19 +97,41 @@
                             </div>
                 </div>
             </div>
-            @if($jobApplication->compatibility_score)
+            @if($jobApplication->compatibility_score !== null)
                     <div class="pt-6 border-t-2 border-[#191A23]/10">
                         <h3 class="text-md font-semibold text-[#191A23] mb-3">Compatibility Score</h3>
-                        <div class="flex items-center gap-3 bg-[#B9FF66]/20 rounded-xl p-4 border border-[#191A23]/30">
-                            <div class="relative h-20 w-20">
-                                <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                    <circle class="text-[#191A23]/20" cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="10" />
-                                    <circle class="text-[#B9FF66]" cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="10" stroke-dasharray="{{ $jobApplication->compatibility_score * 2.83 }} 283" stroke-linecap="round" />
-                    </svg>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                                    <span class="text-2xl font-bold text-[#191A23]">{{ $jobApplication->compatibility_score }}%</span>
-                                </div>
-                            </div>
+                        @php
+                            $score = $jobApplication->compatibility_score;
+                            $colorClass = '';
+                            $bgColorClass = '';
+                            $shadowColorClass = '';
+
+                            if ($score >= 80) {
+                                $colorClass = 'text-[#191A23]'; // Match to primary text color
+                                $bgColorClass = 'bg-[#B9FF66]'; // Primary brand green
+                                $shadowColorClass = '0px 2px 0px 0 #191a23'; // Primary shadow color
+                            } elseif ($score >= 60) {
+                                $colorClass = 'text-green-800';
+                                $bgColorClass = 'bg-green-300';
+                                $shadowColorClass = '0px 2px 0px 0 #1A1A1A';
+                            } elseif ($score >= 40) {
+                                $colorClass = 'text-yellow-800';
+                                $bgColorClass = 'bg-yellow-300';
+                                $shadowColorClass = '0px 2px 0px 0 #1A1A1A';
+                            } elseif ($score >= 10) {
+                                $colorClass = 'text-orange-800';
+                                $bgColorClass = 'bg-orange-300';
+                                $shadowColorClass = '0px 2px 0px 0 #1A1A1A';
+                            } else { // 0-10%
+                                $colorClass = 'text-red-800';
+                                $bgColorClass = 'bg-red-300';
+                                $shadowColorClass = '0px 2px 0px 0 #1A1A1A';
+                            }
+                        @endphp
+                        <div class="flex items-center gap-3 bg-white rounded-xl p-4 border border-[#191A23]/30" style="box-shadow: 0px 3px 0px 0 #191a23;">
+                            <span class="inline-flex items-center justify-center px-4 py-2 rounded-xl text-xl font-bold border-2 border-[#191A23] {{ $bgColorClass }} {{ $colorClass }}" style="box-shadow: {{ $shadowColorClass }};">
+                                {{ $score }}%
+                            </span>
                             <p class="text-sm text-[#191A23]/90">This score indicates how well your CV matches the job requirements based on our analysis.</p>
                         </div>
                     </div>
@@ -170,18 +192,19 @@
     <div class="p-6">
         @php
             $statuses = [
-                            'pending' => ['label' => 'Application Submitted', 'order' => 1, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />'],
-                            'in_review' => ['label' => 'In Review', 'order' => 2, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 5L9 7l-5 5" />'], // Example, adjust icon
-                            'interview_scheduled' => ['label' => 'Interview Scheduled', 'order' => 3, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />'],
-                            'interviewing' => ['label' => 'Interviewing', 'order' => 4, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />'],
-                            'offer_extended' => ['label' => 'Offer Extended', 'order' => 5, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2M5 19V7m14 12v-2m-3-10l-4 4m0 0l-4-4m4 4V3" />'],
-                            'offer_accepted' => ['label' => 'Offer Accepted', 'order' => 6, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 19m7-9V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h8" />'],
-                            'hired' => ['label' => 'Hired', 'order' => 6, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />'],
-                            'accepted' => ['label' => 'Accepted', 'order' => 6, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />'], // Consolidate with hired or offer_accepted
-                            'rejected' => ['label' => 'Application Outcome', 'order' => 6, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />'], // Generic outcome
-                            'offer_declined' => ['label' => 'Offer Declined', 'order' => 6, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />'],
-                            'withdrawn' => ['label' => 'Application Withdrawn', 'order' => 6, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />'],
-                            // Add other relevant stages from JobApplication model
+                            'pending' => ['label' => 'Application Submitted', 'order' => 1, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />'], // Document icon
+                            'in_review' => ['label' => 'In Review', 'order' => 2, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />'], // Eye icon
+                            'shortlisted' => ['label' => 'Shortlisted', 'order' => 2, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />'], // Checkmark icon (similar to accepted)
+                            'interview_scheduled' => ['label' => 'Interview Scheduled', 'order' => 3, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />'], // Calendar icon
+                            'interviewing' => ['label' => 'Interviewing', 'order' => 4, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />'], // User icon
+                            'technical_test' => ['label' => 'Technical Test', 'order' => 4, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 2v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />'], // Bar chart/graph icon
+                            'offer_extended' => ['label' => 'Offer Extended', 'order' => 5, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10v6m0 0v2a2 2 0 002 2h14a2 2 0 002-2v-2m-18 0V7a2 2 0 012-2h3m6 4l3-3m0 0l3 3m-3-3v10" />'], // Document with arrow down (offer)
+                            'offer_accepted' => ['label' => 'Offer Accepted', 'order' => 6, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 19m7-9V5a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h8" />'], // Handshake or accepted document
+                            'hired' => ['label' => 'Hired', 'order' => 7, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />'], // Checkmark (final confirmation)
+                            'rejected' => ['label' => 'Application Rejected', 'order' => 8, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />'], // Cross icon
+                            'offer_declined' => ['label' => 'Offer Declined', 'order' => 9, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />'], // Cross icon
+                            'withdrawn' => ['label' => 'Application Withdrawn', 'order' => 10, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />'], // Back arrow
+                            'on_hold' => ['label' => 'On Hold', 'order' => 11, 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />'], // Clock/pause icon
                         ];
                         
                         $currentStatusKey = $jobApplication->status;

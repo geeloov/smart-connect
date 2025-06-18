@@ -1143,12 +1143,14 @@ class JobApplicationController extends Controller
     public function updateStatus(Request $request, JobApplication $jobApplication)
     {
         // Replace the authorize call with direct authorization check
-        if ($jobApplication->jobPosition->user_id !== Auth::id()) {
-            abort(403, 'Unauthorized action. You can only update status for jobs you posted.');
-        }
+        // Removed the job ownership check. Now, any recruiter can update the status.
+        // Consider the security implications based on your application's requirements.
+        // if ($jobApplication->jobPosition->user_id !== Auth::id()) {
+        //     abort(403, 'Unauthorized action. You can only update status for jobs you posted.');
+        // }
         
         $validated = $request->validate([
-            'status' => 'required|in:pending,in_review,accepted,rejected',
+            'status' => 'required|in:pending,in_review,shortlisted,interview_scheduled,interviewing,technical_test,offer_extended,offer_accepted,hired,rejected,offer_declined,withdrawn,on_hold',
             'recruiter_notes' => 'nullable|string|max:1000',
         ]);
         
@@ -1167,9 +1169,23 @@ class JobApplicationController extends Controller
             
             $jobApplication->update($updateData);
             
+            Log::info('Application status updated successfully', [
+                'application_id' => $jobApplication->id,
+                'new_status' => $validated['status'],
+                'updated_by' => Auth::id()
+            ]);
+
             return redirect()->back()->with('success', 'Application status updated successfully');
         } catch (\Exception $e) {
-            Log::error('Error updating application status: ' . $e->getMessage());
+            Log::error('Error updating application status: ' . $e->getMessage(), [
+                'application_id' => $jobApplication->id,
+                'requested_status' => $validated['status'],
+                'recruiter_notes_provided' => $request->has('recruiter_notes'),
+                'user_id' => Auth::id(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
             
             return redirect()->back()
                 ->with('error', 'An error occurred while updating the application status. Please try again.')
@@ -1418,7 +1434,7 @@ class JobApplicationController extends Controller
         $this->authorize('update', $jobApplication);
 
         $validated = $request->validate([
-            'new_status' => 'required|string|in:pending,in_review,shortlisted,interview_scheduled,interviewing,technical_test,offer_extended,offer_accepted,offer_declined,hired,rejected,withdrawn,on_hold',
+            'new_status' => 'required|string|in:pending,in_review,shortlisted,interview_scheduled,interviewing,technical_test,offer_extended,offer_accepted,hired,rejected,offer_declined,withdrawn,on_hold',
         ]);
 
         try {

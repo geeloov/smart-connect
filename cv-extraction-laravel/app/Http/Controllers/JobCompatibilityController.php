@@ -500,6 +500,30 @@ class JobCompatibilityController extends Controller
             // Get the current user
             $userId = Auth::id();
             
+            // Verify the CV belongs to the authenticated user
+            $cv = CV::where('id', $validated['cv_id'])
+                    ->where('user_id', $userId)
+                    ->first();
+
+            if (!$cv) {
+                return response()->json([
+                    'error' => 'Unauthorized action. The selected CV does not belong to you or does not exist.'
+                ], 403); // Forbidden
+            }
+
+            // Verify the job position exists and is active/accessible
+            $jobPosition = JobPosition::find($validated['job_position_id']);
+
+            if (!$jobPosition || !$jobPosition->is_active) {
+                return response()->json([
+                    'error' => 'The selected job position is invalid or no longer active.'
+                ], 404); // Not Found
+            }
+
+            // Additional check for recruiter's own job positions if context requires
+            // For this specific route, assuming job seekers store their own compatibility
+            // If a recruiter were to use this, additional authorization logic would be needed.
+
             // Check if a compatibility record already exists
             $existingRecord = CVJobCompatibility::where('user_id', $userId)
                 ->where('cv_id', $validated['cv_id'])
@@ -548,7 +572,7 @@ class JobCompatibilityController extends Controller
             ]);
             
             return response()->json([
-                'error' => 'Failed to store compatibility record: ' . $e->getMessage()
+                'error' => 'An unexpected error occurred while storing compatibility data. Please try again. If the problem persists, contact support.'
             ], 500);
         }
     }

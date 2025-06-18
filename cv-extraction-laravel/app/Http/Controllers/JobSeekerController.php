@@ -97,8 +97,13 @@ class JobSeekerController extends Controller
         $cvData = $request->session()->get('cvData');
         $jobMatching = $request->session()->get('jobMatching');
         $jobDescription = $request->session()->get('jobDescription');
+        $successMessage = $request->session()->get('success');
+        $errorMessage = $request->session()->get('error');
+
+        // Get all active job positions for the job seeker to potentially match against
+        $availableJobPositions = JobPosition::active()->latest()->get();
         
-        return view('job-seeker.cv-upload', compact('cvData', 'jobMatching', 'jobDescription'));
+        return view('job-seeker.cv-upload', compact('cvData', 'jobMatching', 'jobDescription', 'availableJobPositions', 'successMessage', 'errorMessage'));
     }
 
     /**
@@ -110,53 +115,104 @@ class JobSeekerController extends Controller
         $request->validate([
             'cv_file' => 'required|mimes:pdf|max:10240', // 10MB max
             'job_description' => 'nullable|string|max:50000', // Add validation for job description
+            'job_position_id' => 'nullable|exists:job_positions,id', // New: for matching against a specific job
+        ], [
+            'cv_file.required' => 'Please upload a CV file.',
+            'cv_file.mimes' => 'The CV file must be a PDF.',
+            'cv_file.max' => 'The CV file size cannot exceed 10MB.',
+            'job_position_id.exists' => 'The selected job position is invalid.',
         ]);
-        
+
+        $file = $request->file('cv_file');
+        $jobDescription = $request->job_description ?? '';
+        $jobPosition = null; // Initialize to null
+        $cvData = ['name' => 'N/A', 'skills' => []]; // Default empty CV data
+        $matchingResults = ['success' => false, 'match_score' => 0, 'reasoning' => 'No job matching performed.']; // Default empty matching results
+        $errorMessage = null; // For specific errors to flash
+        $successMessage = 'CV processed successfully!';
+
         try {
             // Log the original file details
-            $file = $request->file('cv_file');
             Log::info('CV file uploaded by job seeker', [
                 'filename' => $file->getClientOriginalName(),
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType()
             ]);
             
-            // Get extraction controller
-            $extractionController = app()->make('App\Http\Controllers\CvExtractionController');
-            
-            // Get the extraction results - the file is only temporarily used
-            $extractionResult = $extractionController->extract($request);
-            
-            // Process job matching if job description is provided
-            $jobDescription = $request->job_description ?? '';
-            $matchingResults = null;
-            
-            if (!empty($jobDescription) && isset($extractionResult['cv_data'])) {
-                try {
-                    // Match CV with job description
-                    $matchingResults = $extractionController->matchWithJob($file, $jobDescription);
-                } catch (\Exception $e) {
-                    Log::warning('Job matching failed but continuing with CV data', [
-                        'error' => $e->getMessage()
+            // If a job position is selected, get its description
+            if ($request->filled('job_position_id')) {
+                $jobPosition = JobPosition::find($request->job_position_id);
+                if ($jobPosition) {
+                    $jobDescription = $jobPosition->description; // Override with job description
+                    Log::info('Matching against selected job position', [
+                        'job_position_id' => $jobPosition->id,
+                        'job_title' => $jobPosition->title
                     ]);
+                } else {
+                    Log::warning('Selected job position for matching not found or inactive, proceeding without specific job description matching.', [
+                        'job_position_id_requested' => $request->job_position_id
+                    ]);
+                    // Set a user-friendly message for this case
+                    $matchingResults['reasoning'] = 'Selected job position not found or inactive, only CV extraction performed.';
                 }
             }
             
-            // Flash the data to the session
-            return redirect()->route('job-seeker.cv-upload')
-                ->with('cvData', $extractionResult['cv_data'] ?? null)
-                ->with('jobMatching', $matchingResults)
-                ->with('jobDescription', $jobDescription)
-                ->with('success', 'CV processed successfully!');
+            $extractionController = app()->make('App\Http\Controllers\CvExtractionController');
             
-        } catch (\Exception $e) {
-            Log::error('Error processing CV upload: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            try {
+                // Get the extraction results
+                $extractedData = $extractionController->extract($request);
+                $cvData = $extractedData['cv_data'] ?? $cvData; // Use default if 'cv_data' is still missing
+                Log::info('CV extraction completed successfully', ['data_keys' => array_keys($cvData)]);
+
+            } catch (\Exception $e) {
+                Log::error('CV extraction failed: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+                $errorMessage = 'Failed to extract CV data. Please ensure your PDF is readable and try again.';
+                // Keep default $cvData, it will show as 'N/A' in view
+            }
+            
+            // Process job matching only if CV data was successfully extracted AND a job description exists
+            if ($cvData !== ['name' => 'N/A', 'skills' => []] && !empty($jobDescription)) {
+                try {
+                    Log::info('Attempting job matching', ['job_description_length' => strlen($jobDescription)]);
+                    $matchingResults = $extractionController->matchWithJob($file, $jobDescription);
+                    Log::info('Job matching completed successfully', ['score' => $matchingResults['match_score'] ?? 'N/A']);
+                } catch (\Exception $e) {
+                    Log::warning('Job matching failed for CV: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+                    $matchingResults = ['success' => false, 'match_score' => 0, 'reasoning' => 'Failed to perform job matching due to an internal error. Please try again later.'];
+                    $errorMessage = ($errorMessage ? $errorMessage . ' Also, ' : '') . 'Job matching failed. ';
+                }
+            } else if (empty($jobDescription)) {
+                // Inform user why matching wasn't attempted
+                $matchingResults['reasoning'] = 'No job description provided for matching.';
+            }
+
+        } catch (ValidationException $e) {
+            Log::error('Validation error processing CV upload for job seeker', [
+                'errors' => $e->errors(),
+                'user_id' => Auth::id()
             ]);
-            
-            return redirect()->route('job-seeker.cv-upload')
-                ->with('error', 'Error: ' . $e->getMessage());
+            throw $e; // Re-throw validation exceptions for default Laravel handling
+        } catch (\Exception $e) { // Catch any other unexpected errors
+            Log::error('Unexpected error during CV processing for job seeker: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => Auth::id()
+            ]);
+            $errorMessage = 'An unexpected error occurred during CV processing. Please try again. If the problem persists, contact support.';
         }
+
+        // Always fetch available job positions for the view
+        $availableJobPositions = JobPosition::active()->latest()->get();
+
+        // Render the view directly with all the data
+        return view('job-seeker.cv-upload', compact(
+            'cvData',
+            'matchingResults', // Correct variable name
+            'jobDescription',
+            'availableJobPositions'
+        ))
+        ->with('success', $successMessage)
+        ->with('error', $errorMessage);
     }
 
     /**
@@ -269,13 +325,13 @@ class JobSeekerController extends Controller
             return redirect()->route('job-seeker.applications')
                 ->with('success', 'Your application has been submitted successfully!');
                 
+        } catch (ValidationException $e) {
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
-            Log::error('Error submitting job application: ' . $e->getMessage(), [
+            Log::error('Error storing job application: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
-            
-            return redirect()->back()
-                ->with('error', 'Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An unexpected error occurred while submitting your application. Please try again. If the problem persists, contact support.');
         }
     }
 

@@ -53,6 +53,41 @@
             </div>
         @endif
 
+        <!-- Status Color Mapping for consistency -->
+        @php
+            $statusColors = [
+                'pending'             => 'bg-yellow-500/20 text-yellow-700 border-yellow-700/50',
+                'in_review'           => 'bg-blue-500/20 text-blue-700 border-blue-700/50',
+                'shortlisted'         => 'bg-[#B9FF66]/30 text-[#191A23] border-[#191A23]/50',
+                'interview_scheduled' => 'bg-indigo-500/20 text-indigo-700 border-indigo-700/50',
+                'interviewing'        => 'bg-purple-500/20 text-purple-700 border-purple-700/50',
+                'technical_test'      => 'bg-cyan-500/20 text-cyan-700 border-cyan-700/50',
+                'offer_extended'      => 'bg-pink-500/20 text-pink-700 border-pink-700/50',
+                'offer_accepted'      => 'bg-green-500/20 text-green-700 border-green-700/50',
+                'hired'               => 'bg-teal-500/20 text-teal-700 border-teal-700/50',
+                'rejected'            => 'bg-red-500/20 text-red-700 border-red-700/50',
+                'offer_declined'      => 'bg-orange-500/20 text-orange-700 border-orange-700/50',
+                'withdrawn'           => 'bg-gray-500/20 text-gray-700 border-gray-700/50',
+                'on_hold'             => 'bg-slate-500/20 text-slate-700 border-slate-700/50',
+            ];
+            // Define display names for filter options
+            $allStatusesDisplay = [
+                'pending'             => 'Pending',
+                'in_review'           => 'In Review',
+                'shortlisted'         => 'Shortlisted',
+                'interview_scheduled' => 'Interview Scheduled',
+                'interviewing'        => 'Interviewing',
+                'technical_test'      => 'Technical Test',
+                'offer_extended'      => 'Offer Extended',
+                'offer_accepted'      => 'Offer Accepted',
+                'hired'               => 'Hired',
+                'rejected'            => 'Rejected',
+                'offer_declined'      => 'Offer Declined',
+                'withdrawn'           => 'Withdrawn',
+                'on_hold'             => 'On Hold',
+            ];
+        @endphp
+
         <!-- Search and Filter Bar -->
         <div class="bg-white rounded-2xl p-6 mb-8 border border-[#191A23]" style="box-shadow: 0px 5px 0px 0 #191a23;">
             <form action="{{ route('recruiter.applications.index') }}" method="GET" class="flex flex-col sm:flex-row gap-4 items-center">
@@ -76,13 +111,9 @@
                     <select name="status" 
                             class="w-full sm:min-w-[180px] px-4 py-3 rounded-xl bg-white border border-[#191A23]/50 text-[#191A23] focus:ring-2 focus:ring-[#B9FF66]/70 focus:border-[#191A23] text-base">
                         <option value="">All Status</option>
-                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="reviewing" {{ request('status') == 'reviewing' ? 'selected' : '' }}>Reviewing</option>
-                        <option value="shortlisted" {{ request('status') == 'shortlisted' ? 'selected' : '' }}>Shortlisted</option>
-                        <option value="interviewed" {{ request('status') == 'interviewed' ? 'selected' : '' }}>Interviewed</option>
-                        <option value="offered" {{ request('status') == 'offered' ? 'selected' : '' }}>Offered</option>
-                        <option value="hired" {{ request('status') == 'hired' ? 'selected' : '' }}>Hired</option>
-                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                        @foreach($allStatusesDisplay as $value => $displayName)
+                            <option value="{{ $value }}" {{ request('status') == $value ? 'selected' : '' }}>{{ $displayName }}</option>
+                        @endforeach
                     </select>
                     <button type="submit" 
                             class="w-full sm:w-auto px-8 py-3 bg-[#191A23] text-[#FFFFFF] rounded-xl border-2 border-[#191A23] hover:bg-[#33343E] transition-all duration-200 text-base font-medium transform hover:-translate-y-0.5 min-w-[120px]" style="box-shadow: 0px 4px 0px 0 #B9FF66;">
@@ -143,19 +174,11 @@
                                 <div class="flex flex-col items-end gap-2 min-w-fit flex-shrink-0">
                                     @php
                                         $statusBase = 'inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border whitespace-nowrap';
-                                        $statusColors = [
-                                            'pending'     => 'bg-yellow-500/20 text-yellow-700 border-yellow-700/50',
-                                            'reviewing'   => 'bg-blue-500/20 text-blue-700 border-blue-700/50',
-                                            'shortlisted' => 'bg-[#B9FF66]/30 text-[#191A23] border-[#191A23]/50 style="box-shadow: 0px 1px 0px 0 #191a23;"',
-                                            'interviewed' => 'bg-purple-500/20 text-purple-700 border-purple-700/50',
-                                            'offered'     => 'bg-pink-500/20 text-pink-700 border-pink-700/50',
-                                            'hired'       => 'bg-teal-500/20 text-teal-700 border-teal-700/50 style="box-shadow: 0px 1px 0px 0 #191a23;"',
-                                            'rejected'    => 'bg-red-500/20 text-red-700 border-red-700/50',
-                                        ];
+                                        // Use the shared $statusColors variable
                                         $currentStatusClass = $statusColors[$application->status] ?? 'bg-gray-500/20 text-gray-700 border-gray-700/50';
                                     @endphp
                                     <span class="{{ $statusBase }} {{ $currentStatusClass }}">
-                                        {{ ucfirst($application->status) }}
+                                        {{ ucfirst(str_replace('_', ' ', $application->status)) }}
                                     </span>
                                     
                                     @if(isset($application->is_referred) && $application->is_referred)

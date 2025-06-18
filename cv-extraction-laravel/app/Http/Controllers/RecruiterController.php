@@ -238,7 +238,7 @@ class RecruiterController extends Controller
             ]);
             
             return redirect()->route('recruiter.cv-extraction')
-                ->with('error', 'Error: ' . $e->getMessage());
+                ->with('error', 'An unexpected error occurred during CV processing. Please try again. If the problem persists, contact support.');
         }
     }
 

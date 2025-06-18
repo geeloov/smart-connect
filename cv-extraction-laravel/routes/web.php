@@ -58,8 +58,6 @@ Route::middleware('role:job_seeker')->prefix('job-seeker')->name('job-seeker.')-
     Route::get('/resume/default', [JobSeekerController::class, 'getDefaultCVForProcessing'])->name('cv.default-for-processing');
     Route::get('/resume/{cv}/compatibility', [JobSeekerController::class, 'getCVForCompatibility'])->name('cv.compatibility');
     
-    Route::get('/resumes/new', [JobSeekerController::class, 'cvUpload'])->name('cv-upload');
-    Route::post('/resumes/new', [JobSeekerController::class, 'cvUploadStore'])->name('cv-upload.store');
     Route::get('/match-results', [JobSeekerController::class, 'jobMatches'])->name('job-matches');
     
     // Job listings and applications

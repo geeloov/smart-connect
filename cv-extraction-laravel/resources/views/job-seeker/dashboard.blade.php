@@ -101,7 +101,7 @@
 </div>
 
 <!-- Futuristic Quick Actions -->
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4 mb-8">
     <!-- Browse Jobs Card -->
     <a href="{{ route('job-seeker.jobs.available') }}"
        class="action-card group relative overflow-hidden flex items-center rounded-2xl backdrop-blur-sm border border-[#191A23]/20 transition-all duration-300 ease-in-out hover:border-[#B9FF66]/50 hover:shadow-glow-green">
@@ -115,23 +115,6 @@
             <div class="flex-1 min-w-0">
                 <h3 class="text-base font-semibold text-[#191A23] group-hover:translate-x-0.5 transition-transform duration-300">Browse Jobs</h3>
                 <p class="text-xs text-[#191A23]/70 mt-0.5 truncate">Find new job opportunities</p>
-            </div>
-        </div>
-    </a>
-    
-    <!-- Upload CV Card -->
-    <a href="{{ route('job-seeker.cv-upload') }}"
-       class="action-card group relative overflow-hidden flex items-center rounded-2xl backdrop-blur-sm border border-[#191A23]/20 transition-all duration-300 ease-in-out hover:border-[#B9FF66]/50 hover:shadow-glow-green">
-        <div class="absolute inset-0 bg-gradient-to-tr from-[#191A23]/5 via-white/70 to-[#B9FF66]/10 opacity-80 z-0 transition-opacity duration-300 group-hover:opacity-100"></div>
-        <div class="relative z-10 flex items-center gap-3 p-4 w-full">
-            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-[#B9FF66]/30 text-[#191A23] border border-[#191A23]/20 shadow-sm transform transition-all duration-300 group-hover:scale-105 group-hover:bg-[#B9FF66]/50 group-hover:shadow-glow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-            </div>
-            <div class="flex-1 min-w-0">
-                <h3 class="text-base font-semibold text-[#191A23] group-hover:translate-x-0.5 transition-transform duration-300">Upload CV</h3>
-                <p class="text-xs text-[#191A23]/70 mt-0.5 truncate">Update your CV profile</p>
             </div>
         </div>
     </a>

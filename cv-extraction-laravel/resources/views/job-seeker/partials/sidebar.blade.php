@@ -40,15 +40,6 @@
                 <span class="text-sm {{ request()->routeIs('job-seeker.applications.*') ? 'font-semibold' : 'group-hover:text-[#191A23]' }}">My Applications</span>
             </a>
 
-            <!-- CV Upload -->
-            <a href="{{ route('job-seeker.cv-upload') }}" 
-               class="group flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 {{ request()->routeIs('job-seeker.cv-upload') ? 'bg-[#B9FF66] text-[#191A23] font-semibold border border-[#191A23]/50 style="box-shadow: 0px 2px 0px 0px #191A23;"' : 'text-[#191A23]/70 hover:bg-[#191A23]/5 hover:text-[#191A23]' }}">
-                <svg class="w-5 h-5 mr-3 transition-colors duration-200 {{ request()->routeIs('job-seeker.cv-upload') ? 'text-[#191A23]' : 'text-[#191A23]/50 group-hover:text-[#191A23]/70' }}" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <span class="text-sm {{ request()->routeIs('job-seeker.cv-upload') ? 'font-semibold' : 'group-hover:text-[#191A23]' }}">CV Upload</span>
-            </a>
-
             <!-- Profile -->
             <a href="{{ route('job-seeker.profile') }}" 
                class="group flex items-center px-4 py-2.5 rounded-xl transition-all duration-200 {{ request()->routeIs('job-seeker.profile') ? 'bg-[#B9FF66] text-[#191A23] font-semibold border border-[#191A23]/50 style="box-shadow: 0px 2px 0px 0px #191A23;"' : 'text-[#191A23]/70 hover:bg-[#191A23]/5 hover:text-[#191A23]' }}">

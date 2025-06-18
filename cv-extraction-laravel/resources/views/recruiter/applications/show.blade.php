@@ -60,29 +60,58 @@
                         $statusBase = 'inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium border';
                         // Using the same status colors as defined on the index page for consistency
                         $statusColors = [
-                            'pending'     => 'bg-yellow-500/20 text-yellow-700 border-yellow-700/50',
-                            'in_review'   => 'bg-blue-500/20 text-blue-700 border-blue-700/50', // Assuming 'in_review' is a valid status like 'reviewing'
-                            'shortlisted' => 'bg-[#B9FF66]/30 text-[#191A23] border-[#191A23]/50 style="box-shadow: 0px 1px 0px 0 #191a23;"',
-                            'interviewed' => 'bg-purple-500/20 text-purple-700 border-purple-700/50',
-                            'offered'     => 'bg-pink-500/20 text-pink-700 border-pink-700/50',
-                            'hired'       => 'bg-teal-500/20 text-teal-700 border-teal-700/50 style="box-shadow: 0px 1px 0px 0 #191a23;"',
-                            'rejected'    => 'bg-red-500/20 text-red-700 border-red-700/50',
-                            'accepted'    => 'bg-green-500/20 text-green-700 border-green-700/50 style="box-shadow: 0px 1px 0px 0 #191a23;"', // Added for 'accepted' if different from hired
+                            'pending'             => 'bg-yellow-500/20 text-yellow-700 border-yellow-700/50',
+                            'in_review'           => 'bg-blue-500/20 text-blue-700 border-blue-700/50',
+                            'shortlisted'         => 'bg-[#B9FF66]/30 text-[#191A23] border-[#191A23]/50 style="box-shadow: 0px 1px 0px 0 #191a23;"',
+                            'interview_scheduled' => 'bg-indigo-500/20 text-indigo-700 border-indigo-700/50',
+                            'interviewing'        => 'bg-purple-500/20 text-purple-700 border-purple-700/50',
+                            'technical_test'      => 'bg-cyan-500/20 text-cyan-700 border-cyan-700/50',
+                            'offer_extended'      => 'bg-pink-500/20 text-pink-700 border-pink-700/50',
+                            'offer_accepted'      => 'bg-green-500/20 text-green-700 border-green-700/50 style="box-shadow: 0px 1px 0px 0 #191a23;"',
+                            'hired'               => 'bg-teal-500/20 text-teal-700 border-teal-700/50 style="box-shadow: 0px 1px 0px 0 #191a23;"',
+                            'rejected'            => 'bg-red-500/20 text-red-700 border-red-700/50',
+                            'offer_declined'      => 'bg-orange-500/20 text-orange-700 border-orange-700/50',
+                            'withdrawn'           => 'bg-gray-500/20 text-gray-700 border-gray-700/50',
+                            'on_hold'             => 'bg-slate-500/20 text-slate-700 border-slate-700/50',
                         ];
                         $currentStatus = $jobApplication->status;
-                        // Handle cases like 'in_review' if the key in $statusColors is 'reviewing'
-                        if ($currentStatus === 'in_review' && !isset($statusColors['in_review']) && isset($statusColors['reviewing'])) {
-                            $currentStatus = 'reviewing';
-                        }
                         $currentStatusClass = $statusColors[$currentStatus] ?? 'bg-gray-500/20 text-gray-700 border-gray-700/50';
                     @endphp
                     <span class="{{ $statusBase }} {{ $currentStatusClass }}">
                         {{ ucfirst(str_replace('_', ' ', $jobApplication->status)) }}
                     </span>
-                    @if($jobApplication->compatibility_score)
-                    <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium bg-[#B9FF66]/30 text-[#191A23] border border-[#191A23]/50" style="box-shadow: 0px 1px 0px 0 #191a23;">
-                        Match: {{ $jobApplication->compatibility_score }}%
-                    </span>
+                    @if($jobApplication->compatibility_score !== null)
+                        @php
+                            $score = $jobApplication->compatibility_score;
+                            $colorClass = '';
+                            $bgColorClass = '';
+                            $shadowColorClass = '';
+
+                            if ($score >= 80) {
+                                $colorClass = 'text-[#191A23]';
+                                $bgColorClass = 'bg-[#B9FF66]';
+                                $shadowColorClass = '0px 1px 0px 0 #191a23';
+                            } elseif ($score >= 60) {
+                                $colorClass = 'text-green-800';
+                                $bgColorClass = 'bg-green-300';
+                                $shadowColorClass = '0px 1px 0px 0 #1A1A1A';
+                            } elseif ($score >= 40) {
+                                $colorClass = 'text-yellow-800';
+                                $bgColorClass = 'bg-yellow-300';
+                                $shadowColorClass = '0px 1px 0px 0 #1A1A1A';
+                            } elseif ($score >= 10) {
+                                $colorClass = 'text-orange-800';
+                                $bgColorClass = 'bg-orange-300';
+                                $shadowColorClass = '0px 1px 0px 0 #1A1A1A';
+                            } else { // 0-10%
+                                $colorClass = 'text-red-800';
+                                $bgColorClass = 'bg-red-300';
+                                $shadowColorClass = '0px 1px 0px 0 #1A1A1A';
+                            }
+                        @endphp
+                        <span class="inline-flex items-center px-3 py-1 rounded-lg text-sm font-bold border border-[#191A23]/50 {{ $bgColorClass }} {{ $colorClass }}" style="box-shadow: {{ $shadowColorClass }};">
+                            {{ $score }}%
+                        </span>
                     @endif
                 </div>
             </div>
@@ -125,18 +154,8 @@
                     <div>
                         <span class="text-sm text-[#191A23]/70">Status: </span>
                         @php
-                            // Logic to determine badge class, potentially reusing $statusColors from header if available in this scope
-                            // or redefining if necessary. For simplicity, let's assume $statusColors is available or easily adaptable.
-                            // This is a simplified version, actual $statusColors array is defined earlier in the file.
-                            // We need to ensure it's accessible or re-declared if not.
-                            // For this edit, we'll focus on the HTML structure and class application.
-                            // The $statusColors array is defined around line 60-70.
-                            // We'll assume it's accessible here. If not, it would need to be passed or re-queried.
-
+                            // Use the same status colors as defined in the header
                             $currentStatusInCard = $jobApplication->status;
-                            if ($currentStatusInCard === 'in_review' && !isset($statusColors['in_review']) && isset($statusColors['reviewing'])) {
-                                $currentStatusInCard = 'reviewing'; // Alias if needed
-                            }
                             $statusBadgeClass = $statusColors[$currentStatusInCard] ?? 'bg-gray-500/20 text-gray-700 border-gray-700/50';
                         @endphp
                         <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border {{ $statusBadgeClass }}">
@@ -178,12 +197,16 @@
                                 'pending' => 'Pending',
                                 'in_review' => 'In Review',
                                 'shortlisted' => 'Shortlisted',
-                                'interviewed' => 'Interviewed',
-                                'offered' => 'Offered',
+                                'interview_scheduled' => 'Interview Scheduled',
+                                'interviewing' => 'Interviewing',
+                                'technical_test' => 'Technical Test',
+                                'offer_extended' => 'Offer Extended',
+                                'offer_accepted' => 'Offer Accepted',
                                 'hired' => 'Hired',
                                 'rejected' => 'Rejected',
-                                'accepted' => 'Accepted',
-                                'withdrawn' => 'Withdrawn' // Added withdrawn
+                                'offer_declined' => 'Offer Declined',
+                                'withdrawn' => 'Withdrawn',
+                                'on_hold' => 'On Hold',
                             ];
                         @endphp
                         <select id="status" name="status" 
@@ -244,28 +267,51 @@
         </div>
 
         <!-- Compatibility Score Card -->
-        @if($jobApplication->compatibility_score)
+        @if($jobApplication->compatibility_score !== null)
         <div class="md:col-span-1 h-full">
-            <div class="bg-white rounded-2xl border border-[#191A23] p-6 flex flex-col items-center justify-center h-full" style="box-shadow: 0px 5px 0px 0 #191a23;">
-                <div class="relative h-36 w-36 mb-4">
-                    <svg class="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                        <circle class="text-[#191A23]/10" cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="10" />
-                        <circle
-                            class="{{ $jobApplication->compatibility_score >= 70 ? 'text-[#B9FF66]' : ($jobApplication->compatibility_score >= 40 ? 'text-yellow-400' : 'text-red-500') }}"
-                            cx="50" cy="50" r="45" fill="none" stroke="currentColor" stroke-width="10"
-                            stroke-dasharray="{{ $jobApplication->compatibility_score * 2.83 }} 283"
-                            stroke-linecap="round"
-                            style="filter: drop-shadow(0px 0px 5px currentColor ); transition: stroke-dasharray 0.5s ease-in-out;"
-                        />
-                    </svg>
-                    <div class="absolute inset-0 flex items-center justify-center">
-                        <span class="{{ $jobApplication->compatibility_score >= 70 ? 'text-[#191A23]' : ($jobApplication->compatibility_score >= 40 ? 'text-yellow-600' : 'text-red-600') }} text-3xl font-bold">{{ $jobApplication->compatibility_score }}%</span>
-                    </div>
+            <div class="bg-white rounded-2xl border border-[#191A23] p-6 flex flex-col items-center justify-center h-full text-center" style="box-shadow: 0px 5px 0px 0 #191a23;">
+                @php
+                    $score = $jobApplication->compatibility_score;
+                    $colorClass = '';
+                    $bgColorClass = '';
+                    $shadowColorClass = '';
+
+                    if ($score >= 80) {
+                        $colorClass = 'text-[#191A23]'; // Match to primary text color
+                        $bgColorClass = 'bg-[#B9FF66]'; // Primary brand green
+                        $shadowColorClass = '0px 2px 0px 0 #191a23'; // Primary shadow color
+                    } elseif ($score >= 60) {
+                        $colorClass = 'text-green-800';
+                        $bgColorClass = 'bg-green-300';
+                        $shadowColorClass = '0px 2px 0px 0 #1A1A1A';
+                    } elseif ($score >= 40) {
+                        $colorClass = 'text-yellow-800';
+                        $bgColorClass = 'bg-yellow-300';
+                        $shadowColorClass = '0px 2px 0px 0 #1A1A1A';
+                    } elseif ($score >= 10) {
+                        $colorClass = 'text-orange-800';
+                        $bgColorClass = 'bg-orange-300';
+                        $shadowColorClass = '0px 2px 0px 0 #1A1A1A';
+                    } else { // 0-10%
+                        $colorClass = 'text-red-800';
+                        $bgColorClass = 'bg-red-300';
+                        $shadowColorClass = '0px 2px 0px 0 #1A1A1A';
+                    }
+                @endphp
+                <div class="mb-4">
+                    <h3 class="text-lg font-semibold text-[#191A23] mb-3 flex items-center justify-center">
+                        <svg class="h-5 w-5 mr-2 text-[#191A23]/70 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6a2 2 0 00-2-2H5a2 2 0 00-2 2v13a2 2 0 002 2h4a2 2 0 002-2zm0 0V6a2 2 0 012-2h2a2 2 0 012 2v13a2 2 0 01-2 2h-4a2 2 0 01-2-2zm0 0h7.5c1.105 0 2-.895 2-2V7.5a2 2 0 00-2-2H10" />
+                        </svg>
+                        Compatibility Score
+                    </h3>
+                    <span class="inline-flex items-center justify-center px-6 py-3 rounded-xl text-2xl font-bold border-2 border-[#191A23] {{ $bgColorClass }} {{ $colorClass }}" style="box-shadow: {{ $shadowColorClass }};">
+                        {{ $score }}%
+                    </span>
                 </div>
-                <h4 class="font-semibold text-lg text-[#191A23] text-center">
-                    {{ $jobApplication->compatibility_score >= 70 ? 'Strong Match' : ($jobApplication->compatibility_score >= 40 ? 'Good Potential' : 'Low Match') }}
-                </h4>
-                <p class="text-[#191A23]/70 text-sm mt-1 text-center">Based on skills, experience, and education requirements</p>
+                <p class="text-sm text-[#191A23]/70 leading-relaxed">
+                    This score indicates how well the candidate's profile matches the job position requirements, based on skills and experience extracted from their CV.
+                </p>
             </div>
         </div>
         @endif
