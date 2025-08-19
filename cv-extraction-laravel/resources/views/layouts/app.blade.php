@@ -34,6 +34,11 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
+    <script>
+        // Base URL for Python API mounted under /api on the current domain
+        window.API_BASE_URL = "{{ url('/api') }}";
+    </script>
+    
     <!-- Styles -->
     <style>
         body {

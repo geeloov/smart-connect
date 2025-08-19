@@ -116,7 +116,7 @@ class JobApplicationController extends Controller
         ]);
         
         // IMPORTANT DEBUGGING: Check if backend is running
-        $pythonBackend = config('services.cv_extraction.api_url', 'http://localhost:5000');
+        $pythonBackend = config('services.cv_extraction.api_url', 'http://127.0.0.1:5000');
         $backendRunning = false;
         
         try {
@@ -478,7 +478,7 @@ class JobApplicationController extends Controller
                     // Prepare to call the extraction API
                     try {
                         // First check if API is running
-                        $healthCheckUrl = rtrim(config('services.cv_extraction.api_url', 'http://localhost:5000'), '/') . '/api/health-check';
+                        $healthCheckUrl = rtrim(config('services.cv_extraction.api_url', 'http://127.0.0.1:5000'), '/') . '/api/health-check';
                         $healthCheckResponse = Http::timeout(5)->get($healthCheckUrl);
                         
                         if (!$healthCheckResponse->successful()) {
@@ -492,7 +492,7 @@ class JobApplicationController extends Controller
                         }
                         
                         // API is running, now prepare the request
-                        $extractionUrl = rtrim(config('services.cv_extraction.api_url', 'http://localhost:5000'), '/') . '/api/extract-cv';
+                        $extractionUrl = rtrim(config('services.cv_extraction.api_url', 'http://127.0.0.1:5000'), '/') . '/api/extract-cv';
                         Log::info('CV extraction API is available, sending default CV for extraction', [
                             'api_url' => $extractionUrl,
                             'cv_id' => $defaultCV->id
@@ -662,7 +662,7 @@ class JobApplicationController extends Controller
                 try {
                     // First check if the API is running
                     try {
-                        $healthCheckUrl = rtrim(config('services.cv_extraction.api_url', 'http://localhost:5000'), '/') . '/api/health-check';
+                        $healthCheckUrl = rtrim(config('services.cv_extraction.api_url', 'http://127.0.0.1:5000'), '/') . '/api/health-check';
                         Log::info('Checking if CV extraction API is running', ['url' => $healthCheckUrl]);
                         
                         $healthCheckResponse = Http::timeout(5)->get($healthCheckUrl);
@@ -691,7 +691,7 @@ class JobApplicationController extends Controller
                     }
                     
                     // API is running, now prepare the request
-                    $extractionUrl = rtrim(config('services.cv_extraction.api_url', 'http://localhost:5000'), '/') . '/api/extract-cv';
+                    $extractionUrl = rtrim(config('services.cv_extraction.api_url', 'http://127.0.0.1:5000'), '/') . '/api/extract-cv';
                     Log::info('CV extraction API is available, sending CV for extraction', [
                         'api_url' => $extractionUrl
                     ]);

@@ -259,7 +259,8 @@ class JobCompatibilityController extends Controller
     private function isFlaskServerRunning()
     {
         try {
-            $ch = curl_init('http://127.0.0.1:5000/api/health-check');
+            $healthUrl = rtrim(config('services.cv_extraction.api_url', 'http://127.0.0.1:5000'), '/') . '/api/health-check';
+            $ch = curl_init($healthUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, 2); // Short timeout
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
@@ -319,7 +320,7 @@ class JobCompatibilityController extends Controller
             // Quick check if the Flask server is running before making a full API call
             if (!$this->isFlaskServerRunning()) {
                 return response()->json([
-                    'error' => 'The compatibility service is unavailable. Please ensure the Flask server is running at http://127.0.0.1:5000.'
+                    'error' => 'The compatibility service is unavailable. Please ensure the Flask server is running at ' . config('services.cv_extraction.api_url', 'http://127.0.0.1:5000') . '.'
                 ], 503);
             }
 
@@ -342,8 +343,9 @@ class JobCompatibilityController extends Controller
                 'job_description' => $jobPosition->description
             ];
 
+            $compatUrl = rtrim(config('services.cv_extraction.api_url', 'http://127.0.0.1:5000'), '/') . '/api/check-compatibility-score';
             curl_setopt_array($ch, [
-                CURLOPT_URL => 'http://127.0.0.1:5000/api/check-compatibility-score',
+                CURLOPT_URL => $compatUrl,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_POST => true,
                 CURLOPT_POSTFIELDS => $postFields,
@@ -352,7 +354,7 @@ class JobCompatibilityController extends Controller
             ]);
             
             Log::info('Executing cURL request to Flask API', [
-                'url' => 'http://127.0.0.1:5000/api/check-compatibility-score',
+                'url' => $compatUrl,
                 'cv_path_sent' => $cvPath,
                 'job_description_length' => strlen($jobPosition->description),
                 'job_description_preview' => substr($jobPosition->description, 0, 100) . '...',
@@ -386,7 +388,7 @@ class JobCompatibilityController extends Controller
                 // Special handling for common error codes
                 $errorMessage = $curlError;
                 if ($curlErrorNo == 7) {
-                    $errorMessage = "Failed to connect to Flask API. Is the Flask server running at http://127.0.0.1:5000?";
+                    $errorMessage = "Failed to connect to Flask API. Is the Flask server running at " . config('services.cv_extraction.api_url', 'http://127.0.0.1:5000') . "?";
                 }
                 
                 return response()->json(['error' => $errorMessage], 503);
@@ -445,7 +447,8 @@ class JobCompatibilityController extends Controller
     {
         try {
             // Make a simple GET request to the Flask server (not a specific endpoint)
-            $ch = curl_init('http://127.0.0.1:5000/');
+            $rootUrl = rtrim(config('services.cv_extraction.api_url', 'http://127.0.0.1:5000'), '/') . '/';
+            $ch = curl_init($rootUrl);
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_TIMEOUT, 5);
             curl_exec($ch);
@@ -458,7 +461,7 @@ class JobCompatibilityController extends Controller
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Could not connect to Flask server: ' . $error,
-                    'details' => 'Make sure the Flask server is running at http://127.0.0.1:5000'
+                    'details' => 'Make sure the Flask server is running at ' . config('services.cv_extraction.api_url', 'http://127.0.0.1:5000')
                 ], 500);
             }
             

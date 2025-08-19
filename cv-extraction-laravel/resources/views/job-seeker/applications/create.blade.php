@@ -1047,8 +1047,9 @@
                     jobDescriptionLength: jobPositionData.description.length
                 });
                 
-                // Send to Flask API for compatibility check
-                return fetch('http://localhost:5000/api/check-compatibility-score', {
+                // Build API URL from global base (set in layout)
+                const apiBaseUrl = (window.API_BASE_URL || '/api').replace(/\/$/, '');
+                return fetch(`${apiBaseUrl}/check-compatibility-score`, {
                     method: 'POST',
                     headers: {
                         'Accept': 'application/json',

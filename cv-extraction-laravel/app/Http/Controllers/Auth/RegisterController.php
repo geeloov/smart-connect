@@ -4,9 +4,11 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Mail\WelcomeMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends Controller
@@ -46,6 +48,13 @@ class RegisterController extends Controller
         ]);
 
         Auth::login($user);
+
+        // Send welcome email (queued if queue/mail is configured)
+        try {
+            Mail::to($user->email)->send(new WelcomeMail($user));
+        } catch (\Throwable $e) {
+            // Silently fail to not block registration flow; consider logging
+        }
 
         // Redirect based on user role
         if ($user->role === 'recruiter') {

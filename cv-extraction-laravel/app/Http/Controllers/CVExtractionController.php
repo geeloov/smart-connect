@@ -122,8 +122,8 @@ class CVExtractionController extends Controller
             // Get the CV file
             $file = $request->file('cv_file');
             
-            // Fix: Correctly set the API URL to extract-cv
-            $apiUrl = 'http://127.0.0.1:5000/api/extract-cv';
+            // Build API URL from config base
+            $apiUrl = rtrim(config('services.cv_extraction.api_url', 'http://127.0.0.1:5000'), '/') . '/api/extract-cv';
             
             Log::info('Sending CV to extraction API', [
                 'api_url' => $apiUrl,
@@ -186,7 +186,7 @@ class CVExtractionController extends Controller
     public function matchWithJob($cvFile, $jobDescription)
     {
         try {
-            $apiUrl = 'http://127.0.0.1:5000/api/match-cv-with-job';
+            $apiUrl = rtrim(config('services.cv_extraction.api_url', 'http://127.0.0.1:5000'), '/') . '/api/match-cv-with-job';
             
             Log::info('Sending CV data for job matching', [
                 'api_url' => $apiUrl,
@@ -341,7 +341,7 @@ class CVExtractionController extends Controller
     private function matchCVWithJob($cvData, $jobDescription)
     {
         try {
-            $apiUrl = config('services.cv_matching.url', 'http://127.0.0.1:5000/api/match-cv-with-job');
+            $apiUrl = rtrim(config('services.cv_extraction.api_url', 'http://127.0.0.1:5000'), '/') . '/api/match-cv-with-job';
             
             Log::info('Sending CV data for job matching', [
                 'api_url' => $apiUrl,
